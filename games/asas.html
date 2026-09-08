@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أساس القراءة — فصحون</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+  :root {
+    --asas-gold: #b8860b;
+    --asas-gold-light: #e8c766;
+    --asas-ink: #2c1810;
+    --asas-cream: #fdf6e8;
+    --asas-cream-deep: #f3e6c8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --asas-cream: #241c12; --asas-cream-deep: #302514; --asas-ink: #f3e6c8; }
+  }
+
+  body { background: var(--bg); }
+
+  .asas-band {
+    background: linear-gradient(135deg, var(--asas-cream) 0%, var(--asas-cream-deep) 100%);
+    border-top: 3px solid var(--asas-gold);
+    border-bottom: 3px solid var(--asas-gold);
+    padding: 26px 16px 22px;
+    text-align: center;
+  }
+  .asas-band .theme-emoji {
+    font-size: 40px; width: 78px; height: 78px; margin: 0 auto 6px;
+    background: radial-gradient(circle at 35% 30%, var(--asas-gold-light), var(--asas-gold));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(184,134,11,.4);
+  }
+  .asas-band h1 { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 28px; color: var(--asas-ink); }
+  .asas-band p { margin-top: 4px; color: var(--asas-ink); opacity: .8; font-weight: 700; font-size: 14px; }
+
+  .mascot-row { display: flex; align-items: center; gap: 12px; justify-content: center; max-width: 560px; margin: 14px auto 0; }
+  .mascot-avatar {
+    font-size: 30px; flex-shrink: 0; background: #fff; width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(0,0,0,.15);
+    border: 2px solid var(--asas-gold); transition: transform .25s ease;
+  }
+  .mascot-avatar.happy { animation: mascot-bounce .5s ease; }
+  .mascot-avatar.oops { animation: gentle-nudge .35s ease; }
+  @keyframes mascot-bounce { 0%,100%{transform:translateY(0) rotate(0);} 30%{transform:translateY(-8px) rotate(-8deg);} 60%{transform:translateY(0) rotate(6deg);} }
+  @keyframes gentle-nudge { 0%,100%{transform:translateX(0);} 30%{transform:translateX(-5px);} 60%{transform:translateX(5px);} }
+  .mascot-bubble {
+    background: #fff; border: 2px solid var(--asas-gold-light); border-radius: 16px 16px 16px 4px;
+    padding: 9px 15px; font-weight: 800; font-size: 13px; color: var(--asas-ink);
+    box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 380px;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ---------- خريطة المراحل ---------- */
+  .stage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-top: 20px; }
+  .stage-card {
+    border-radius: var(--radius-lg); padding: 20px 14px; text-align: center; color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08), 0 16px 26px var(--shadow);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: linear-gradient(155deg, var(--asas-gold-light), var(--asas-gold));
+    transition: transform .15s ease;
+  }
+  .stage-card:active { transform: scale(0.97); }
+  .stage-card.locked { background: linear-gradient(155deg,#9ca3af,#6b7280); opacity: .75; }
+  .stage-card .num { font-size: 12px; font-weight: 800; opacity: .85; }
+  .stage-card .ic { font-size: 30px; }
+  .stage-card h3 { font-size: 15px; }
+  .stage-card .st { font-size: 14px; letter-spacing: 2px; color: #3a2405; background: rgba(255,255,255,.5); border-radius: 999px; padding: 2px 10px; margin-top: 2px; }
+  .stage-card.locked .st { color: #fff; background: rgba(255,255,255,.2); }
+
+  /* ---------- شاشة المرحلة ---------- */
+  .back-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; cursor: pointer; color: var(--accent); font-weight: 800; width: fit-content; }
+  .mode-pills { display: flex; justify-content: center; gap: 10px; margin: 10px 0 4px; }
+  .mode-pill { padding: 8px 16px; border-radius: 999px; font-weight: 800; font-size: 13px; background: var(--accent-soft); color: var(--accent); cursor: pointer; }
+  .mode-pill.active { background: var(--asas-gold); color: #fff; }
+
+  .big-card {
+    max-width: 460px; margin: 18px auto; text-align: center; padding: 40px 22px;
+    background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: 0 6px 16px var(--shadow);
+  }
+  .big-card .item-text {
+    font-family: 'Amiri','Tajawal',serif; font-size: 64px; font-weight: 700; color: var(--asas-gold);
+    line-height: 1.4; min-height: 90px; display: flex; align-items: center; justify-content: center;
+  }
+  .listen-btn {
+    margin: 10px auto 0; display: inline-flex; align-items: center; gap: 8px;
+    background: var(--asas-gold); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-weight: 800; font-size: 15px; box-shadow: 0 6px 14px rgba(184,134,11,.35);
+  }
+  .listen-btn:active { transform: scale(0.96); }
+  .learn-nav { display: flex; justify-content: center; gap: 14px; margin-top: 18px; }
+  .nav-btn { background: var(--accent-soft); color: var(--accent); border-radius: 12px; padding: 12px 20px; font-weight: 800; }
+  .dots { display: flex; justify-content: center; gap: 5px; margin-top: 14px; flex-wrap: wrap; max-width: 300px; margin-inline: auto; }
+  .dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-soft); }
+  .dots span.on { background: var(--asas-gold); }
+
+  .practice-card { max-width: 460px; margin: 10px auto 6px; text-align: center; padding: 26px 20px; }
+  .practice-card .prompt { font-size: 15px; font-weight: 800; color: var(--text); opacity: .85; margin-bottom: 6px; }
+  .practice-card .qcounter { margin-top: 6px; font-size: 13px; opacity: .7; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 460px; margin: 14px auto 0; }
+  .choice-btn {
+    background: var(--card-bg); box-shadow: 0 6px 16px var(--shadow); border-radius: var(--radius-md);
+    padding: 20px 10px; font-family: 'Amiri','Tajawal',serif; font-size: 30px; font-weight: 700; color: var(--text);
+    transition: transform .1s ease;
+  }
+  .choice-btn:active { transform: scale(0.96); }
+  .choice-btn.correct { background: #bbf7d0; color: #15803d; }
+  .choice-btn.wrong { background: #fecaca; color: #b91c1c; animation: gentle-nudge .35s ease; }
+  .choice-btn.tried { opacity: .35; pointer-events: none; }
+  .choice-btn[disabled] { pointer-events: none; }
+
+  .hud { display: flex; justify-content: center; gap: 12px; margin: 14px 0 4px; flex-wrap: wrap; }
+
+  #win-overlay { position: fixed; inset: 0; background: rgba(20,14,40,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; }
+  #win-overlay .card { max-width: 380px; text-align: center; animation: pop-in .4s ease; }
+  #win-overlay .stars-big { font-size: 44px; letter-spacing: 8px; color: #d4a017; margin: 10px 0; }
+  #win-overlay .actions { display: flex; gap: 10px; margin-top: 18px; }
+  #win-overlay .actions button { flex: 1; }
+  .ghost-btn { background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-md); padding: 14px; font-weight: 800; }
+
+  .mute-warning {
+    max-width: 460px; margin: 12px auto 0; padding: 10px 14px; border-radius: 12px;
+    background: #fef3c7; color: #92400e; font-size: 13px; font-weight: 800; text-align: center;
+  }
+
+  /* ---------- رتّب الكلمات لجملة ---------- */
+  .word-bank, .assembled-strip {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    max-width: 560px; margin: 14px auto; min-height: 54px;
+  }
+  .assembled-strip {
+    border: 2px dashed var(--asas-gold-light); border-radius: 14px; padding: 12px;
+    background: var(--card-bg); transition: transform .12s ease;
+  }
+  .assembled-strip.shake { animation: gentle-nudge .35s ease; }
+  .word-tile {
+    background: linear-gradient(160deg, var(--asas-gold-light), var(--asas-gold));
+    color: #3a2405; font-weight: 900; font-family: 'Amiri','Tajawal',serif; font-size: 19px;
+    padding: 10px 16px; border-radius: 10px; box-shadow: 0 4px 10px rgba(184,134,11,.3);
+  }
+  .word-tile.in-strip { background: var(--card-bg); color: var(--text); box-shadow: 0 2px 6px var(--shadow); border: 2px solid var(--asas-gold-light); }
+  .word-tile:active { transform: scale(0.94); }
+  .empty-hint { color: var(--text); opacity: .5; font-size: 13px; align-self: center; }
+
+  /* ---------- رتّب الجمل لقصة ---------- */
+  .story-cards { max-width: 560px; margin: 14px auto 0; }
+  .story-card {
+    background: var(--card-bg); border-radius: 14px; padding: 12px 16px; margin: 10px 0;
+    display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px var(--shadow);
+    cursor: pointer; transition: transform .1s ease;
+  }
+  .story-card:active { transform: scale(0.98); }
+  .story-card .badge {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; font-size: 14px;
+  }
+  .story-card.numbered .badge { background: var(--asas-gold); color: #fff; }
+  .story-card .txt { font-family: 'Amiri','Tajawal',serif; font-size: 16px; flex: 1; line-height: 1.6; }
+  .story-card .mini-listen { flex-shrink: 0; font-size: 20px; padding: 4px 8px; }
+
+  /* ---------- قِطع القراءة ---------- */
+  .passage-card { max-width: 620px; margin: 14px auto; padding: 26px 24px; }
+  .passage-title { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 22px; text-align: center; color: var(--asas-gold); margin-bottom: 4px; }
+  .passage-counter { text-align: center; font-size: 13px; opacity: .7; margin-bottom: 14px; }
+  .passage-story { font-family: 'Amiri','Tajawal',serif; font-size: 21px; line-height: 2.1; text-align: justify; }
+  .section-label { font-weight: 800; font-size: 14px; color: var(--asas-gold); margin: 18px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--accent-soft); color: var(--text); font-family: 'Amiri','Tajawal',serif; font-size: 16px;
+    padding: 6px 14px; border-radius: 999px;
+  }
+  .dict-chip { background: linear-gradient(160deg, var(--asas-gold-light), var(--asas-gold)); color: #3a2405; font-weight: 800; }
+  .skill-note-card { background: #fef3c7; color: #92400e; border-radius: 12px; padding: 12px 14px; font-family: 'Amiri','Tajawal',serif; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+  .comp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--accent-soft); }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .comp-text { flex: 1; font-size: 15px; }
+  .mini-btn { flex-shrink: 0; font-size: 16px; padding: 4px 8px; border-radius: 8px; background: var(--accent-soft); cursor: pointer; }
+  .dict-sentence-card { background: var(--card-bg); border: 2px solid var(--asas-gold-light); border-radius: 12px; padding: 12px 16px; font-family: 'Amiri','Tajawal',serif; font-size: 19px; display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="logo-emoji">📖</span> فصحون</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="pill" id="wallet-pill">🪙 0</span>
+    <a href="fasihoon.html" class="pill">📖 فصحون</a>
+    <a href="../index.html" class="pill">🏠 الرئيسية</a>
+  </div>
+</div>
+
+<div class="asas-band">
+  <div class="theme-emoji">📖</div>
+  <h1>أساس القراءة</h1>
+  <p>مع الأستاذ فصيح — خطوة خطوة، بدون عجلة</p>
+  <div class="mascot-row">
+    <div class="mascot-avatar" id="mascot-avatar">🦉</div>
+    <div class="mascot-bubble" id="mascot-bubble">أهلاً فيك! خذ وقتك، نسمع ونتعلم مع بعض 🌱</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- خريطة المراحل -->
+  <section id="map-screen">
+    <div class="stage-grid" id="stage-grid"></div>
+  </section>
+
+  <!-- شاشة المرحلة -->
+  <section id="stage-screen" hidden>
+    <div class="back-row" id="back-to-map">→ رجوع للمراحل</div>
+    <div class="mode-pills" id="mode-pills">
+      <div class="mode-pill" id="pill-learn">🎧 تعلّم</div>
+      <div class="mode-pill" id="pill-practice">✏️ تدرّب</div>
+    </div>
+    <div id="mute-warning" class="mute-warning" hidden>🔇 الصوت مكتوم — فعّله من ⚙️ بالأعلى عشان تسمع الحروف</div>
+
+    <!-- وضع التعلّم -->
+    <div id="learn-mode">
+      <div class="big-card">
+        <div class="item-text" id="learn-item">...</div>
+        <div class="listen-btn" id="learn-listen">🔊 اسمع</div>
+      </div>
+      <div class="dots" id="learn-dots"></div>
+      <div class="learn-nav">
+        <div class="nav-btn" id="learn-prev">→ السابق</div>
+        <div class="nav-btn" id="learn-next">التالي ←</div>
+      </div>
+      <div style="text-align:center; margin-top:18px;">
+        <div class="listen-btn" id="learn-start-practice" style="background:linear-gradient(135deg,var(--accent),#5b21b6);" hidden>ابدأ التدريب ✏️</div>
+      </div>
+    </div>
+
+    <!-- وضع التدريب -->
+    <div id="practice-mode" hidden>
+      <div class="hud">
+        <span class="pill">✅ <span id="score-count">0</span></span>
+        <span class="pill" id="streak-pill">🔥 0</span>
+      </div>
+      <div class="card practice-card">
+        <div class="prompt">استمع ثم اضغط على المثل</div>
+        <div class="listen-btn" id="practice-listen">🔊 اسمع مرة ثانية</div>
+        <div class="qcounter" id="qcounter"></div>
+      </div>
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <!-- وضع رتّب الكلمات لجملة -->
+    <div id="sentord-mode" hidden>
+      <div class="hud">
+        <span class="pill">✅ <span id="so-score">0</span></span>
+      </div>
+      <div class="card practice-card">
+        <div class="prompt">اضغط الكلمات بالترتيب لتكوّن الجملة</div>
+        <div class="qcounter" id="so-counter"></div>
+      </div>
+      <div class="assembled-strip" id="so-assembled"></div>
+      <div class="word-bank" id="so-bank"></div>
+      <div style="text-align:center; margin-top:14px;">
+        <div class="nav-btn" id="so-clear">امسح الكل ↺</div>
+      </div>
+    </div>
+
+    <!-- وضع رتّب الجمل لقصة -->
+    <div id="storyord-mode" hidden>
+      <div class="hud">
+        <span class="pill">✅ <span id="sto-score">0</span></span>
+      </div>
+      <div class="card practice-card">
+        <h3 id="sto-title" style="font-family:'Reem Kufi','Tajawal',sans-serif;"></h3>
+        <div class="qcounter" id="sto-counter"></div>
+      </div>
+      <div class="story-cards" id="sto-cards"></div>
+      <div style="text-align:center; margin-top:14px;">
+        <div class="nav-btn" id="sto-clear">امسح الترتيب ↺</div>
+      </div>
+    </div>
+
+    <!-- وضع قِطع القراءة -->
+    <div id="passage-mode" hidden>
+      <div class="passage-counter" id="pg-counter"></div>
+      <div class="card passage-card">
+        <div class="passage-title" id="pg-title"></div>
+        <div class="listen-btn" id="pg-listen-story" style="display:block; width:fit-content; margin:0 auto 16px;">🔊 اسمع القصة</div>
+        <div class="passage-story" id="pg-story"></div>
+
+        <div id="pg-vocab-section" hidden>
+          <div class="section-label">🔠 كلمات أساسية</div>
+          <div class="chip-row" id="pg-vocab"></div>
+        </div>
+
+        <div id="pg-skill-section" hidden>
+          <div class="section-label">💡 لاحظ</div>
+          <div class="skill-note-card"><span id="pg-skill-listen" class="mini-btn">🔊</span><span id="pg-skill-text"></span></div>
+        </div>
+
+        <div id="pg-comp-section" hidden>
+          <div class="section-label">❓ أسئلة الفهم — ناقشها بصوت عالٍ</div>
+          <div id="pg-comp-list"></div>
+        </div>
+
+        <div id="pg-dict-section" hidden>
+          <div class="section-label">✏️ إملاء كلمات</div>
+          <div class="chip-row" id="pg-dict-words"></div>
+          <div class="section-label">✏️ إملاء جملة</div>
+          <div class="dict-sentence-card"><span id="pg-dict-sent-listen" class="mini-btn">🔊</span><span id="pg-dict-sent-text"></span></div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:16px;">
+        <div class="listen-btn" id="pg-next" style="background:linear-gradient(135deg,var(--accent),#5b21b6);">أنهيت هذا المقطع، التالي ← 📖</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="win-overlay" hidden>
+  <div class="card">
+    <h2 id="win-title">أحسنت!</h2>
+    <div class="stars-big" id="win-stars">★★★</div>
+    <p id="win-desc"></p>
+    <div class="actions">
+      <button class="ghost-btn" id="btn-replay">🔁 مرة ثانية</button>
+      <button class="big-btn" id="btn-back">المراحل 🗺️</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../shared/firebase-config.js"></script>
+<script src="../shared/progress.js"></script>
+<script src="../shared/economy-config.js"></script>
+<script src="../shared/economy.js"></script>
+<script src="../shared/asas-data.js"></script>
+<script src="../shared/asas-data-phase3.js"></script>
+<script src="../shared/asas-data-phase2.js"></script>
+<script src="../shared/asas-data-phase4.js"></script>
+<script>
+const GAME_ID = "asas";
+const profile = Fakker.Profile.get();
+if (!profile) location.href = "../index.html";
+
+Fakker.mountSettingsToggle();
+function refreshWallet() { document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance; }
+refreshWallet();
+
+function setMascot(text, mood) {
+  document.getElementById("mascot-bubble").textContent = text;
+  const av = document.getElementById("mascot-avatar");
+  av.classList.remove("happy", "oops");
+  if (mood) { void av.offsetWidth; av.classList.add(mood); }
+}
+
+// ---------------- نطق عربي (Web Speech API) ----------------
+let arabicVoice = null;
+function pickArabicVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  arabicVoice = voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("ar")) || null;
+}
+if (window.speechSynthesis) {
+  pickArabicVoice();
+  window.speechSynthesis.onvoiceschanged = pickArabicVoice;
+}
+function speak(text) {
+  if (!Fakker.Settings.get().sound) {
+    document.getElementById("mute-warning").hidden = false;
+    return;
+  }
+  document.getElementById("mute-warning").hidden = true;
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ar-SA";
+  u.rate = 0.8;
+  if (arabicVoice) u.voice = arabicVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// ---------------- خريطة المراحل ----------------
+function stageStars(stage) { return Fakker.Progress.get(GAME_ID, stage.id).bestStars; }
+function isUnlocked(stage) {
+  if (stage.id === 1) return true;
+  const prev = ASAS_STAGES.find((s) => s.id === stage.id - 1);
+  return prev && stageStars(prev) >= 1;
+}
+
+function renderMap() {
+  const grid = document.getElementById("stage-grid");
+  grid.innerHTML = "";
+  ASAS_STAGES.forEach((stage) => {
+    const unlocked = isUnlocked(stage);
+    const stars = stageStars(stage);
+    const el = document.createElement("div");
+    el.className = "stage-card" + (unlocked ? "" : " locked");
+    el.innerHTML = `
+      <div class="num">المرحلة ${stage.id}</div>
+      <div class="ic">${unlocked ? stage.icon : "🔒"}</div>
+      <h3>${stage.title}</h3>
+      <div class="st">${unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) : "مقفولة"}</div>
+    `;
+    if (unlocked) el.onclick = () => openStage(stage);
+    grid.appendChild(el);
+  });
+}
+
+// ---------------- حالة المرحلة الحالية ----------------
+let curStage = null;
+let learnIndex = 0;
+let session = null; // { queue, qIndex, current, tries, correctFirstTry, streak, best }
+
+function learnedKey(stage) { return "fk_asas_learned_" + stage.key; }
+
+const ALL_MODE_IDS = ["learn-mode", "practice-mode", "sentord-mode", "storyord-mode", "passage-mode"];
+function showOnlyMode(id) {
+  ALL_MODE_IDS.forEach((m) => { document.getElementById(m).hidden = m !== id; });
+}
+
+function openStage(stage) {
+  curStage = stage;
+  document.getElementById("map-screen").hidden = true;
+  document.getElementById("stage-screen").hidden = false;
+
+  if (stage.kind === "sentence-order") {
+    document.getElementById("mode-pills").hidden = true;
+    showOnlyMode("sentord-mode");
+    startSentenceOrder();
+    return;
+  }
+  if (stage.kind === "story-order") {
+    document.getElementById("mode-pills").hidden = true;
+    showOnlyMode("storyord-mode");
+    startStoryOrder();
+    return;
+  }
+  if (stage.kind === "passage") {
+    document.getElementById("mode-pills").hidden = true;
+    showOnlyMode("passage-mode");
+    startPassages();
+    return;
+  }
+
+  document.getElementById("mode-pills").hidden = false;
+  const alreadyLearned = localStorage.getItem(learnedKey(stage)) === "1";
+  if (alreadyLearned) startPractice(); else startLearn();
+}
+
+function backToMap() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  document.getElementById("stage-screen").hidden = true;
+  document.getElementById("map-screen").hidden = false;
+  renderMap();
+}
+document.getElementById("back-to-map").onclick = backToMap;
+
+// ---------------- رتّب الكلمات لجملة ----------------
+const SO_ROUNDS_MAX = 8;
+let soSession = null;
+
+function startSentenceOrder() {
+  showOnlyMode("sentord-mode");
+  const n = Math.min(SO_ROUNDS_MAX, ASAS_SENTENCE_ORDER.length);
+  soSession = {
+    queue: shuffleAsas(ASAS_SENTENCE_ORDER.map((_, i) => i)).slice(0, n),
+    qIndex: 0, correctCount: 0, firstTryCorrect: 0,
+    bankTiles: [], assembled: [], wrongAwarded: false,
+  };
+  document.getElementById("so-score").textContent = "0";
+  nextSentenceRound();
+}
+
+function nextSentenceRound() {
+  if (soSession.qIndex >= soSession.queue.length) return endSentenceOrder();
+  const item = ASAS_SENTENCE_ORDER[soSession.queue[soSession.qIndex]];
+  soSession.qIndex++;
+  soSession.bankTiles = shuffleAsas(item.correct.map((w, i) => ({ id: i, word: w, used: false })));
+  soSession.assembled = [];
+  soSession.correctOrder = item.correct;
+  soSession.wrongAwarded = false;
+  document.getElementById("so-counter").textContent = `${soSession.qIndex} من ${soSession.queue.length}`;
+  setMascot("رتّب الكلمات بالترتيب الصحيح 🧩");
+  renderSentOrd();
+}
+
+function renderSentOrd() {
+  const bank = document.getElementById("so-bank");
+  const strip = document.getElementById("so-assembled");
+  bank.innerHTML = "";
+  soSession.bankTiles.filter((t) => !t.used).forEach((t) => {
+    const el = document.createElement("div");
+    el.className = "word-tile";
+    el.textContent = t.word;
+    el.onclick = () => placeTile(t);
+    bank.appendChild(el);
+  });
+  strip.innerHTML = "";
+  if (soSession.assembled.length === 0) {
+    const hint = document.createElement("div");
+    hint.className = "empty-hint";
+    hint.textContent = "اضغط الكلمات بالأسفل عشان تبدأ";
+    strip.appendChild(hint);
+  }
+  soSession.assembled.forEach((id) => {
+    const t = soSession.bankTiles.find((x) => x.id === id);
+    const el = document.createElement("div");
+    el.className = "word-tile in-strip";
+    el.textContent = t.word;
+    el.onclick = () => removeTile(t);
+    strip.appendChild(el);
+  });
+}
+
+function placeTile(tile) {
+  tile.used = true;
+  soSession.assembled.push(tile.id);
+  renderSentOrd();
+  if (soSession.bankTiles.every((t) => t.used)) checkSentenceOrder();
+}
+function removeTile(tile) {
+  tile.used = false;
+  soSession.assembled = soSession.assembled.filter((id) => id !== tile.id);
+  renderSentOrd();
+}
+
+function checkSentenceOrder() {
+  const words = soSession.assembled.map((id) => soSession.bankTiles.find((t) => t.id === id).word);
+  const isCorrect = words.join("|") === soSession.correctOrder.join("|");
+  if (isCorrect) {
+    soSession.correctCount++;
+    if (!soSession.wrongAwarded) soSession.firstTryCorrect++;
+    Fakker.FX.success();
+    const result = Fakker.Economy.awardCorrect(1);
+    setMascot(`${Fakker.FX.randomPraise()} +${result.points} نقطة`, "happy");
+    refreshWallet();
+    document.getElementById("so-score").textContent = soSession.correctCount;
+    speak(words.join(" "));
+    setTimeout(nextSentenceRound, 1500);
+  } else {
+    if (!soSession.wrongAwarded) { Fakker.Economy.awardWrong(); soSession.wrongAwarded = true; refreshWallet(); }
+    Fakker.FX.wrong();
+    setMascot("مو هالترتيب، رتّبها براحتك وجرّب 🎧", "oops");
+    const strip = document.getElementById("so-assembled");
+    strip.classList.remove("shake"); void strip.offsetWidth; strip.classList.add("shake");
+  }
+}
+
+document.getElementById("so-clear").onclick = () => {
+  soSession.bankTiles.forEach((t) => (t.used = false));
+  soSession.assembled = [];
+  renderSentOrd();
+};
+
+function endSentenceOrder() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const ratio = soSession.firstTryCorrect / soSession.queue.length;
+  const stars = ratio >= 0.85 ? 3 : ratio >= 0.6 ? 2 : 1;
+  Fakker.Progress.record("asas", curStage.id, { stars, score: soSession.firstTryCorrect });
+  Fakker.Analytics.logPlay("asas");
+  Fakker.Economy.awardCompletion("أساس القراءة");
+  refreshWallet();
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = stars === 3 ? "أحسنت! أتقنتها 📖✨" : Fakker.FX.randomPraise();
+  document.getElementById("win-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  document.getElementById("win-desc").textContent = `رتّبت من أول محاولة ${soSession.firstTryCorrect} من ${soSession.queue.length} جملة`;
+  document.getElementById("win-overlay").hidden = false;
+}
+
+// ---------------- رتّب الجمل لقصة ----------------
+const STO_ROUNDS_MAX = 8;
+let stoSession = null;
+
+function startStoryOrder() {
+  showOnlyMode("storyord-mode");
+  const n = Math.min(STO_ROUNDS_MAX, ASAS_STORY_ORDER.length);
+  stoSession = {
+    queue: shuffleAsas(ASAS_STORY_ORDER.map((_, i) => i)).slice(0, n),
+    qIndex: 0, correctCount: 0, firstTryCorrect: 0,
+    cards: [], assignedOrder: [], wrongAwarded: false,
+  };
+  document.getElementById("sto-score").textContent = "0";
+  nextStoryRound();
+}
+
+function nextStoryRound() {
+  if (stoSession.qIndex >= stoSession.queue.length) return endStoryOrder();
+  const story = ASAS_STORY_ORDER[stoSession.queue[stoSession.qIndex]];
+  stoSession.qIndex++;
+  stoSession.cards = shuffleAsas(story.correct.map((s, i) => ({ id: i, text: s })));
+  stoSession.assignedOrder = [];
+  stoSession.correctOrder = story.correct;
+  stoSession.wrongAwarded = false;
+  document.getElementById("sto-title").textContent = story.title;
+  document.getElementById("sto-counter").textContent = `${stoSession.qIndex} من ${stoSession.queue.length}`;
+  setMascot("رتّب الجمل بالترتيب الصحيح للقصة 📜");
+  renderStoOrd();
+}
+
+function renderStoOrd() {
+  const wrap = document.getElementById("sto-cards");
+  wrap.innerHTML = "";
+  stoSession.cards.forEach((c) => {
+    const orderIdx = stoSession.assignedOrder.indexOf(c.id);
+    const el = document.createElement("div");
+    el.className = "story-card" + (orderIdx >= 0 ? " numbered" : "");
+    el.innerHTML = `
+      <div class="badge">${orderIdx >= 0 ? orderIdx + 1 : ""}</div>
+      <div class="txt">${c.text}</div>
+      <div class="listen-btn mini-listen">🔊</div>
+    `;
+    el.querySelector(".mini-listen").onclick = (e) => { e.stopPropagation(); speak(c.text); };
+    el.onclick = () => tapStoryCard(c);
+    wrap.appendChild(el);
+  });
+}
+
+function tapStoryCard(card) {
+  if (stoSession.assignedOrder.includes(card.id)) {
+    stoSession.assignedOrder = stoSession.assignedOrder.filter((id) => id !== card.id);
+  } else if (stoSession.assignedOrder.length < stoSession.cards.length) {
+    stoSession.assignedOrder.push(card.id);
+  }
+  renderStoOrd();
+  if (stoSession.assignedOrder.length === stoSession.cards.length) checkStoryOrder();
+}
+
+function checkStoryOrder() {
+  const texts = stoSession.assignedOrder.map((id) => stoSession.cards.find((c) => c.id === id).text);
+  const isCorrect = texts.join("|") === stoSession.correctOrder.join("|");
+  if (isCorrect) {
+    stoSession.correctCount++;
+    if (!stoSession.wrongAwarded) stoSession.firstTryCorrect++;
+    Fakker.FX.success();
+    const result = Fakker.Economy.awardCorrect(1);
+    setMascot(`${Fakker.FX.randomPraise()} +${result.points} نقطة`, "happy");
+    refreshWallet();
+    document.getElementById("sto-score").textContent = stoSession.correctCount;
+    setTimeout(nextStoryRound, 1500);
+  } else {
+    if (!stoSession.wrongAwarded) { Fakker.Economy.awardWrong(); stoSession.wrongAwarded = true; refreshWallet(); }
+    Fakker.FX.wrong();
+    setMascot("مو هالترتيب، جرّب ترتيب ثاني 🎧", "oops");
+  }
+}
+
+document.getElementById("sto-clear").onclick = () => {
+  stoSession.assignedOrder = [];
+  renderStoOrd();
+};
+
+function endStoryOrder() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const ratio = stoSession.firstTryCorrect / stoSession.queue.length;
+  const stars = ratio >= 0.85 ? 3 : ratio >= 0.6 ? 2 : 1;
+  Fakker.Progress.record("asas", curStage.id, { stars, score: stoSession.firstTryCorrect });
+  Fakker.Analytics.logPlay("asas");
+  Fakker.Economy.awardCompletion("أساس القراءة");
+  refreshWallet();
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = stars === 3 ? "أحسنت! أتقنتها 📖✨" : Fakker.FX.randomPraise();
+  document.getElementById("win-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  document.getElementById("win-desc").textContent = `رتّبت من أول محاولة ${stoSession.firstTryCorrect} من ${stoSession.queue.length} قصة`;
+  document.getElementById("win-overlay").hidden = false;
+}
+
+// ---------------- وضع التعلّم ----------------
+function setModePills(mode) {
+  document.getElementById("pill-learn").classList.toggle("active", mode === "learn");
+  document.getElementById("pill-practice").classList.toggle("active", mode === "practice");
+  document.getElementById("learn-mode").hidden = mode !== "learn";
+  document.getElementById("practice-mode").hidden = mode !== "practice";
+}
+document.getElementById("pill-learn").onclick = () => startLearn();
+document.getElementById("pill-practice").onclick = () => startPractice();
+
+function startLearn() {
+  setModePills("learn");
+  learnIndex = 0;
+  renderLearnDots();
+  showLearnItem();
+  setMascot("استمع لكل واحدة، وخذ وقتك 🌱");
+}
+
+function renderLearnDots() {
+  const dots = document.getElementById("learn-dots");
+  dots.innerHTML = "";
+  curStage.items.forEach((_, i) => {
+    const d = document.createElement("span");
+    if (i === learnIndex) d.className = "on";
+    dots.appendChild(d);
+  });
+}
+
+function showLearnItem() {
+  const item = curStage.items[learnIndex];
+  document.getElementById("learn-item").textContent = item;
+  speak(item);
+  renderLearnDots();
+  const isLast = learnIndex === curStage.items.length - 1;
+  document.getElementById("learn-start-practice").hidden = !isLast;
+}
+
+document.getElementById("learn-listen").onclick = () => speak(curStage.items[learnIndex]);
+document.getElementById("learn-next").onclick = () => {
+  if (learnIndex < curStage.items.length - 1) { learnIndex++; showLearnItem(); }
+};
+document.getElementById("learn-prev").onclick = () => {
+  if (learnIndex > 0) { learnIndex--; showLearnItem(); }
+};
+document.getElementById("learn-start-practice").onclick = () => {
+  localStorage.setItem(learnedKey(curStage), "1");
+  startPractice();
+};
+
+// ---------------- وضع التدريب ----------------
+const ROUNDS_MAX = 10;
+
+function startPractice() {
+  setModePills("practice");
+  const n = Math.min(ROUNDS_MAX, curStage.items.length);
+  session = {
+    queue: shuffleAsas(curStage.items.map((_, i) => i)).slice(0, n),
+    qIndex: 0,
+    current: null,
+    tries: 0,
+    correctFirstTry: 0,
+    streak: 0,
+    best: 0,
+  };
+  document.getElementById("score-count").textContent = "0";
+  updateStreakUI();
+  nextRound();
+}
+
+function updateStreakUI() {
+  document.getElementById("streak-pill").textContent = "🔥 " + session.streak;
+}
+
+function nextRound() {
+  if (session.qIndex >= session.queue.length) return endPractice();
+  const targetIndex = session.queue[session.qIndex];
+  session.qIndex++;
+  session.tries = 0;
+  const target = curStage.items[targetIndex];
+  const distractors = asasDistractors(curStage, targetIndex);
+  const choices = shuffleAsas([target, ...distractors]);
+  session.current = { target, choices };
+
+  document.getElementById("qcounter").textContent = `${session.qIndex} من ${session.queue.length}`;
+  setMascot("استمع ثم اضغط على المثل 👂");
+  speak(target);
+
+  const choicesEl = document.getElementById("choices");
+  choicesEl.innerHTML = "";
+  choices.forEach((c) => {
+    const b = document.createElement("div");
+    b.className = "choice-btn";
+    b.textContent = c;
+    b.onclick = () => answerPractice(c, b);
+    choicesEl.appendChild(b);
+  });
+}
+
+document.getElementById("practice-listen").onclick = () => { if (session && session.current) speak(session.current.target); };
+
+function answerPractice(choice, btnEl) {
+  session.tries++;
+  const isCorrect = choice === session.current.target;
+
+  if (isCorrect) {
+    document.querySelectorAll(".choice-btn").forEach((b) => b.setAttribute("disabled", "true"));
+    btnEl.classList.add("correct");
+    if (session.tries === 1) session.correctFirstTry++;
+    session.streak++;
+    session.best = Math.max(session.best, session.streak);
+    Fakker.FX.success();
+    const result = Fakker.Economy.awardCorrect(session.streak);
+    const streakTxt = result.message ? " " + result.message : "";
+    setMascot(`${Fakker.FX.randomPraise()} +${result.points} نقطة${streakTxt}`, "happy");
+    refreshWallet();
+    document.getElementById("score-count").textContent = session.correctFirstTry;
+    updateStreakUI();
+    setTimeout(nextRound, 1000);
+  } else {
+    btnEl.classList.add("wrong", "tried");
+    session.streak = 0;
+    updateStreakUI();
+    Fakker.FX.wrong();
+    if (session.tries === 1) {
+      const result = Fakker.Economy.awardWrong();
+      refreshWallet();
+    }
+    setMascot("ولا يهمك، استمع مرة ثانية وجرّب 🎧", "oops");
+    speak(session.current.target);
+  }
+}
+
+function computeStars() {
+  const ratio = session.correctFirstTry / session.queue.length;
+  if (ratio >= 0.85) return 3;
+  if (ratio >= 0.6) return 2;
+  return 1;
+}
+
+function endPractice() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const stars = computeStars();
+  Fakker.Progress.record(GAME_ID, curStage.id, { stars, score: session.correctFirstTry });
+  Fakker.Analytics.logPlay(GAME_ID);
+  Fakker.Economy.awardCompletion("أساس القراءة");
+  refreshWallet();
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = stars === 3 ? "أحسنت! أتقنتها 📖✨" : Fakker.FX.randomPraise();
+  document.getElementById("win-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  document.getElementById("win-desc").textContent = `أجبت صح من أول محاولة على ${session.correctFirstTry} من ${session.queue.length}`;
+  document.getElementById("win-overlay").hidden = false;
+}
+
+// ---------------- قِطع القراءة ----------------
+let pgSession = null;
+
+function startPassages() {
+  showOnlyMode("passage-mode");
+  pgSession = { index: 0 };
+  renderPassage();
+}
+
+function renderPassage() {
+  const p = curStage.items[pgSession.index];
+  window.speechSynthesis && window.speechSynthesis.cancel();
+
+  document.getElementById("pg-counter").textContent = `${pgSession.index + 1} من ${curStage.items.length}`;
+  document.getElementById("pg-title").textContent = p.title;
+  document.getElementById("pg-story").textContent = p.story;
+  document.getElementById("pg-listen-story").onclick = () => speak(p.story);
+  setMascot("اسمع القصة، وناقش الأسئلة براحتك 📖");
+
+  const vocabSection = document.getElementById("pg-vocab-section");
+  if (p.vocab && p.vocab.length) {
+    vocabSection.hidden = false;
+    const wrap = document.getElementById("pg-vocab");
+    wrap.innerHTML = "";
+    p.vocab.forEach((w) => {
+      const el = document.createElement("div");
+      el.className = "chip";
+      el.textContent = w;
+      el.onclick = () => speak(w);
+      wrap.appendChild(el);
+    });
+  } else vocabSection.hidden = true;
+
+  const skillSection = document.getElementById("pg-skill-section");
+  if (p.skillNote) {
+    skillSection.hidden = false;
+    document.getElementById("pg-skill-text").textContent = p.skillNote;
+    document.getElementById("pg-skill-listen").onclick = () => speak(p.skillNote);
+  } else skillSection.hidden = true;
+
+  const compSection = document.getElementById("pg-comp-section");
+  const questions = p.comprehension || p.questions;
+  if (questions && questions.length) {
+    compSection.hidden = false;
+    const list = document.getElementById("pg-comp-list");
+    list.innerHTML = "";
+    questions.forEach((q, i) => {
+      const row = document.createElement("div");
+      row.className = "comp-row";
+      row.innerHTML = `<span class="comp-num">${i + 1}</span><span class="comp-text">${q}</span><span class="mini-btn">🔊</span>`;
+      row.querySelector(".mini-btn").onclick = () => speak(q);
+      list.appendChild(row);
+    });
+  } else compSection.hidden = true;
+
+  const dictSection = document.getElementById("pg-dict-section");
+  if (p.dictationWords && p.dictationWords.length) {
+    dictSection.hidden = false;
+    const wrap = document.getElementById("pg-dict-words");
+    wrap.innerHTML = "";
+    p.dictationWords.forEach((w) => {
+      const el = document.createElement("div");
+      el.className = "chip dict-chip";
+      el.textContent = w;
+      el.onclick = () => speak(w);
+      wrap.appendChild(el);
+    });
+    document.getElementById("pg-dict-sent-text").textContent = p.dictationSentence;
+    document.getElementById("pg-dict-sent-listen").onclick = () => speak(p.dictationSentence);
+  } else dictSection.hidden = true;
+}
+
+document.getElementById("pg-next").onclick = () => {
+  const result = Fakker.Economy.awardCorrect(1);
+  refreshWallet();
+  pgSession.index++;
+  if (pgSession.index >= curStage.items.length) return endPassages();
+  renderPassage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+function endPassages() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  Fakker.Progress.record("asas", curStage.id, { stars: 3, score: curStage.items.length });
+  Fakker.Analytics.logPlay("asas");
+  Fakker.Economy.awardCompletion("أساس القراءة");
+  refreshWallet();
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = "أحسنت! أنهيت كل المقاطع 📖✨";
+  document.getElementById("win-stars").textContent = "★★★";
+  document.getElementById("win-desc").textContent = `قرأت ${curStage.items.length} مقطعاً`;
+  document.getElementById("win-overlay").hidden = false;
+}
+
+document.getElementById("btn-replay").onclick = () => {
+  document.getElementById("win-overlay").hidden = true;
+  if (curStage.kind === "sentence-order") startSentenceOrder();
+  else if (curStage.kind === "story-order") startStoryOrder();
+  else if (curStage.kind === "passage") startPassages();
+  else startPractice();
+};
+document.getElementById("btn-back").onclick = () => { document.getElementById("win-overlay").hidden = true; backToMap(); };
+
+// بدء التشغيل
+renderMap();
+</script>
+</body>
+</html>

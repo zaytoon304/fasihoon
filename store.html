@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متجر المكافآت — فصحون</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/style.css">
+<style>
+  .hero { text-align: center; padding: 26px 16px 10px; }
+  .hero .logo { font-size: 50px; }
+  .hero h1 { font-size: 28px; color: var(--accent); margin-top: 4px; }
+  .hero p { margin-top: 6px; }
+
+  .wallet-strip {
+    display: flex; justify-content: center; gap: 14px; margin: 16px auto 26px; flex-wrap: wrap;
+  }
+  .wallet-box {
+    background: var(--card-bg); border-radius: var(--radius-md);
+    box-shadow: 0 6px 16px var(--shadow); padding: 14px 22px; text-align: center; min-width: 130px;
+  }
+  .wallet-box .num { font-size: 26px; font-weight: 900; color: var(--accent); }
+  .wallet-box .lbl { font-size: 12px; color: var(--text-soft); font-weight: 700; }
+
+  .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; }
+  .tab-btn {
+    background: var(--card-bg); box-shadow: 0 4px 14px var(--shadow); border-radius: 999px;
+    padding: 10px 20px; font-weight: 800; font-size: 14px; color: var(--text-soft);
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+
+  .rewards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px; max-width: 1000px; margin: 0 auto;
+  }
+  .reward-card { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+  .reward-card .icon {
+    font-size: 40px; width: 74px; height: 74px; margin: 0 auto;
+    background: linear-gradient(155deg, var(--accent-soft), #fff);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(124,58,237,.12);
+  }
+  .reward-card h3 { font-size: 17px; }
+  .reward-card .desc { font-size: 13px; min-height: 34px; }
+  .reward-card .cost { font-weight: 900; color: #d4a017; font-size: 16px; }
+  .reward-card .type-tag {
+    font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+    display: inline-block; margin: 0 auto;
+  }
+  .type-tag.digital { background: #dbeafe; color: #1d4ed8; }
+  .type-tag.real { background: #fef3c7; color: #92400e; }
+  .qty-tag { font-size: 11px; color: var(--text-soft); }
+  .redeem-btn {
+    margin-top: 6px; background: var(--accent); color: #fff; border-radius: 12px;
+    padding: 12px; font-weight: 800; font-size: 14px;
+  }
+  .redeem-btn:disabled { opacity: .4; }
+  .redeem-btn.owned { background: #16a34a; }
+
+  .status-list { max-width: 700px; margin: 30px auto 0; }
+  .status-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--card-bg); border-radius: 14px; padding: 12px 16px; margin-bottom: 8px;
+    box-shadow: 0 4px 12px var(--shadow); font-size: 14px;
+  }
+  .status-badge { font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 999px; }
+  .status-badge.pending { background: #fef3c7; color: #92400e; }
+  .status-badge.approved { background: #dbeafe; color: #1d4ed8; }
+  .status-badge.rejected { background: #fecaca; color: #b91c1c; }
+  .status-badge.redeemed { background: #dcfce7; color: #15803d; }
+
+  #confirm-overlay, #toast {
+    position: fixed; inset: 0; background: rgba(20,14,40,0.55);
+    display: flex; align-items: center; justify-content: center; z-index: 500;
+  }
+  #confirm-overlay .card { max-width: 380px; text-align: center; }
+  #confirm-overlay .actions { display: flex; gap: 10px; margin-top: 18px; }
+  #confirm-overlay .actions button { flex: 1; }
+  .ghost-btn { background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-md); padding: 14px; font-weight: 800; }
+
+  #toast { background: none; align-items: flex-start; justify-content: center; pointer-events: none; }
+  #toast .msg {
+    margin-top: 24px; background: #16a34a; color: #fff; padding: 12px 22px; border-radius: 14px;
+    font-weight: 800; box-shadow: 0 8px 20px rgba(0,0,0,.2);
+  }
+  #toast .msg.error { background: #dc2626; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="logo-emoji">📖</span> فصحون</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <a href="teacher.html" class="pill">🔐 المعلم</a>
+    <a href="index.html" class="pill">🏠 الرئيسية</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="logo">🎁</div>
+  <h1>متجر المكافآت</h1>
+  <p id="greeting">اشترِ مكافآت رقمية أو واقعية بنقاطك!</p>
+</div>
+
+<div class="wallet-strip">
+  <div class="wallet-box"><div class="num" id="w-balance">0</div><div class="lbl">🪙 رصيدك المتاح</div></div>
+  <div class="wallet-box"><div class="num" id="w-lifetime">0</div><div class="lbl">⭐ إجمالي ما جمعته</div></div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab-btn active" data-tab="all">الكل</div>
+    <div class="tab-btn" data-tab="digital">رقمية</div>
+    <div class="tab-btn" data-tab="real">واقعية</div>
+    <div class="tab-btn" data-tab="mine">طلباتي</div>
+  </div>
+
+  <div class="rewards-grid" id="rewards-grid"></div>
+  <div class="status-list" id="status-list" hidden></div>
+</div>
+
+<div id="confirm-overlay" hidden>
+  <div class="card">
+    <h2>تأكيد الاستبدال</h2>
+    <p style="margin-top:10px;" id="confirm-text"></p>
+    <div class="actions">
+      <button class="ghost-btn" id="confirm-cancel">إلغاء</button>
+      <button class="big-btn" id="confirm-ok">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" hidden><div class="msg" id="toast-msg"></div></div>
+
+<script src="shared/progress.js"></script>
+<script src="shared/economy-config.js"></script>
+<script src="shared/economy.js"></script>
+<script>
+const profile = Fakker.Profile.get();
+if (!profile) location.href = "index.html";
+Fakker.mountSettingsToggle();
+
+document.getElementById("greeting").textContent = profile.name + "، اشترِ مكافآت رقمية أو واقعية بنقاطك!";
+
+function refreshWallet() {
+  const w = Fakker.Wallet.get();
+  document.getElementById("w-balance").textContent = w.balance;
+  document.getElementById("w-lifetime").textContent = w.lifetime;
+}
+
+let activeTab = "all";
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeTab = btn.dataset.tab;
+    render();
+  };
+});
+
+function typeLabel(t) { return t === "digital" ? "رقمية" : "واقعية"; }
+const statusLabels = { pending: "بانتظار الموافقة", approved: "تمت الموافقة ✅", rejected: "مرفوضة ↩️ (استُرجعت نقاطك)", redeemed: "تم التسليم 🎉" };
+
+function render() {
+  const grid = document.getElementById("rewards-grid");
+  const statusList = document.getElementById("status-list");
+  refreshWallet();
+
+  if (activeTab === "mine") {
+    grid.hidden = true; statusList.hidden = false;
+    const mine = Fakker.Redemptions.listForStudent(profile.id).sort((a, b) => b.createdAt - a.createdAt);
+    statusList.innerHTML = mine.length ? "" : `<p style="text-align:center;">ما عندك طلبات استبدال لسه.</p>`;
+    mine.forEach((r) => {
+      const row = document.createElement("div");
+      row.className = "status-row";
+      row.innerHTML = `
+        <div>${r.rewardIcon || "🎁"} <b>${r.rewardName}</b> — ${r.cost} 🪙</div>
+        <span class="status-badge ${r.status}">${statusLabels[r.status]}</span>`;
+      statusList.appendChild(row);
+    });
+    return;
+  }
+
+  grid.hidden = false; statusList.hidden = true;
+  let rewards = Fakker.Rewards.listActive();
+  if (activeTab !== "all") rewards = rewards.filter((r) => r.type === activeTab);
+  grid.innerHTML = "";
+  const wallet = Fakker.Wallet.get();
+
+  rewards.forEach((r) => {
+    const canAfford = wallet.balance >= r.cost;
+    const card = document.createElement("div");
+    card.className = "card reward-card";
+    card.innerHTML = `
+      <div class="icon">${r.icon}</div>
+      <h3>${r.name}</h3>
+      <p class="desc">${r.description}</p>
+      <span class="type-tag ${r.type}">${typeLabel(r.type)}</span>
+      ${r.qty !== null ? `<span class="qty-tag">متبقي: ${r.qty}</span>` : ""}
+      <div class="cost">${r.cost} 🪙</div>
+      <button class="redeem-btn" ${canAfford ? "" : "disabled"}>${canAfford ? "استبدال النقاط" : "رصيد غير كافٍ"}</button>
+    `;
+    card.querySelector(".redeem-btn").onclick = () => openConfirm(r);
+    grid.appendChild(card);
+  });
+
+  if (!rewards.length) grid.innerHTML = `<p style="text-align:center;grid-column:1/-1;">لا توجد مكافآت بهذا التصنيف حالياً.</p>`;
+}
+
+let pendingReward = null;
+function openConfirm(reward) {
+  pendingReward = reward;
+  document.getElementById("confirm-text").textContent =
+    `هل أنت متأكد إنك تبي تستبدل ${reward.cost} نقطة مقابل «${reward.name}»؟`;
+  document.getElementById("confirm-overlay").hidden = false;
+}
+document.getElementById("confirm-cancel").onclick = () => { document.getElementById("confirm-overlay").hidden = true; pendingReward = null; };
+document.getElementById("confirm-ok").onclick = () => {
+  document.getElementById("confirm-overlay").hidden = true;
+  if (!pendingReward) return;
+  const result = Fakker.Redemptions.create(pendingReward, profile);
+  if (!result.ok) {
+    showToast(result.error === "insufficient" ? "رصيدك ما يكفي!" : "المكافأة غير متاحة حالياً", true);
+  } else if (result.record.status === "approved") {
+    Fakker.FX.confetti(); Fakker.FX.win();
+    showToast("🎉 تم فتح مكافأتك مباشرة!");
+  } else {
+    Fakker.FX.success();
+    showToast("✅ أُرسل طلبك للمعلم — بانتظار الموافقة");
+  }
+  pendingReward = null;
+  render();
+};
+
+function showToast(msg, isError) {
+  const toast = document.getElementById("toast");
+  const box = document.getElementById("toast-msg");
+  box.textContent = msg;
+  box.className = "msg" + (isError ? " error" : "");
+  toast.hidden = false;
+  setTimeout(() => { toast.hidden = true; }, 1800);
+}
+
+render();
+</script>
+</body>
+</html>

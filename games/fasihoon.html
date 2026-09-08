@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فصحون</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+  :root {
+    --fasih-gold: #b8860b;
+    --fasih-gold-light: #e8c766;
+    --fasih-ink: #2c1810;
+    --fasih-cream: #fdf6e8;
+    --fasih-cream-deep: #f3e6c8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fasih-cream: #241c12; --fasih-cream-deep: #302514; --fasih-ink: #f3e6c8; }
+  }
+
+  body { background: var(--bg); }
+
+  /* إطار زخرفي فصيح */
+  .fasih-band {
+    background: linear-gradient(135deg, var(--fasih-cream) 0%, var(--fasih-cream-deep) 100%);
+    border-top: 3px solid var(--fasih-gold);
+    border-bottom: 3px solid var(--fasih-gold);
+    position: relative;
+    padding: 26px 16px 30px;
+    overflow: hidden;
+  }
+  .fasih-band::before, .fasih-band::after {
+    content: "";
+    position: absolute; inset-block: 0; width: 14px;
+    background-image: repeating-linear-gradient(-45deg, var(--fasih-gold) 0 4px, transparent 4px 10px);
+    opacity: .55;
+  }
+  .fasih-band::before { right: 0; }
+  .fasih-band::after { left: 0; }
+
+  .game-header { text-align: center; position: relative; z-index: 1; }
+  .game-header .theme-emoji {
+    font-size: 40px; width: 78px; height: 78px; margin: 0 auto 6px;
+    background: radial-gradient(circle at 35% 30%, var(--fasih-gold-light), var(--fasih-gold));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(184,134,11,.4);
+  }
+  .game-header h1 {
+    font-family: 'Reem Kufi', 'Tajawal', sans-serif;
+    font-size: 30px; margin-top: 2px; color: var(--fasih-ink); letter-spacing: 1px;
+  }
+  .game-header p { margin-top: 4px; color: var(--fasih-ink); opacity: .75; font-weight: 700; }
+
+  /* الأستاذ فصيح - الشخصية المرافقة */
+  .mascot-row {
+    display: flex; align-items: center; gap: 12px; justify-content: center;
+    max-width: 560px; margin: 16px auto 0; position: relative; z-index: 1;
+  }
+  .mascot-avatar {
+    font-size: 34px; flex-shrink: 0; background: #fff;
+    width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,.15); border: 2px solid var(--fasih-gold);
+    transition: transform .25s ease;
+  }
+  .mascot-avatar.happy { animation: mascot-bounce .5s ease; }
+  .mascot-avatar.oops { animation: shake .4s ease; }
+  @keyframes mascot-bounce {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    30% { transform: translateY(-10px) rotate(-8deg); }
+    60% { transform: translateY(0) rotate(6deg); }
+  }
+  .mascot-bubble {
+    background: #fff; border: 2px solid var(--fasih-gold-light);
+    border-radius: 16px 16px 16px 4px; padding: 10px 16px;
+    font-weight: 800; font-size: 14px; color: var(--fasih-ink);
+    box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 380px;
+  }
+
+  .hud { display: flex; justify-content: center; gap: 12px; margin: 14px 0 10px; flex-wrap: wrap; }
+  .streak-pill.hot { transform: scale(1.15); color: #ea580c; }
+  .powerup-btn { cursor: pointer; color: var(--fasih-gold); transition: transform .12s ease; }
+  .powerup-btn:active { transform: scale(0.92); }
+  .powerup-btn.disabled { opacity: .4; pointer-events: none; }
+  .choice-btn.eliminated { opacity: .25; pointer-events: none; }
+
+  .timer-track { max-width: 420px; margin: 0 auto 22px; height: 10px; background: var(--accent-soft); border-radius: 999px; overflow: hidden; }
+  .timer-fill { height: 100%; background: var(--fasih-gold); width: 100%; transition: width .1s linear; border-radius: 999px; }
+  .timer-fill.danger { background: #ef4444; }
+
+  /* بطاقات الحروف/الكلمات المبعثرة */
+  .tiles-row {
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    max-width: 560px; margin: 0 auto 18px;
+  }
+  .tile-chip {
+    background: linear-gradient(160deg, var(--fasih-gold-light), var(--fasih-gold));
+    color: #3a2405; font-weight: 900; font-size: 20px;
+    min-width: 42px; height: 42px; padding: 0 10px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(184,134,11,.35);
+    animation: pop-in .35s ease backwards;
+  }
+
+  .question-card { max-width: 600px; margin: 0 auto 24px; text-align: center; padding: 30px 22px; }
+  .question-card .qtext { font-family: 'Amiri', 'Tajawal', serif; font-size: 25px; font-weight: 700; line-height: 1.8; white-space: pre-line; }
+  .question-card .qcounter { margin-top: 10px; font-size: 14px; }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; margin: 0 auto; }
+  .choice-btn {
+    background: var(--card-bg); box-shadow: 0 6px 16px var(--shadow);
+    border-radius: var(--radius-md); padding: 18px 10px;
+    font-size: 19px; font-weight: 800; color: var(--text);
+    transition: transform .1s ease;
+  }
+  .choice-btn:active { transform: scale(0.96); }
+  .choice-btn.correct { background: #bbf7d0; color: #15803d; }
+  .choice-btn.wrong { background: #fecaca; color: #b91c1c; animation: shake .4s; }
+  .choice-btn[disabled] { pointer-events: none; }
+
+  #win-overlay { position: fixed; inset: 0; background: rgba(20,14,40,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; }
+  #win-overlay .card { max-width: 380px; text-align: center; animation: pop-in .4s ease; }
+  #win-overlay .stars-big { font-size: 44px; letter-spacing: 8px; color: #d4a017; margin: 10px 0; }
+  #win-overlay .actions { display: flex; gap: 10px; margin-top: 18px; }
+  #win-overlay .actions button { flex: 1; }
+  .ghost-btn { background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-md); padding: 14px; font-weight: 800; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="logo-emoji">📖</span> فصحون</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="pill" id="wallet-pill">🪙 0</span>
+    <a href="../store.html" class="pill">🎁 المتجر</a>
+    <a href="../index.html" class="pill">🏠 الرئيسية</a>
+  </div>
+</div>
+
+<div class="fasih-band">
+  <div class="game-header">
+    <div class="theme-emoji" id="theme-emoji">📖</div>
+    <h1 id="theme-title">فصحون</h1>
+    <p id="theme-subtitle"></p>
+  </div>
+  <div class="mascot-row">
+    <div class="mascot-avatar" id="mascot-avatar">🦉</div>
+    <div class="mascot-bubble" id="mascot-bubble">أهلاً! أنا الأستاذ فصيح، جاهز نتحدّى مفرداتنا؟</div>
+  </div>
+  <p style="margin-top:12px; position:relative; z-index:1;">
+    <a href="asas.html" style="font-size:13px; font-weight:800; color:var(--fasih-gold); text-decoration:underline;">لسه ما تعرف تقرأ؟ ابدأ من أساس القراءة 📖</a>
+  </p>
+</div>
+
+<div class="hud">
+  <span class="pill">✅ <span id="score-count">0</span></span>
+  <span class="pill streak-pill" id="streak-pill">🔥 0</span>
+  <span class="pill powerup-btn" id="powerup-5050">🎯 50:50 (<span id="powerup-count">2</span>)</span>
+</div>
+
+<div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+
+<div class="container">
+  <div class="tiles-row" id="tiles-row" hidden></div>
+  <div class="card question-card">
+    <div class="qtext" id="qtext">...</div>
+    <div class="qcounter" id="qcounter"></div>
+  </div>
+  <div class="choices" id="choices"></div>
+</div>
+
+<div id="win-overlay" hidden>
+  <div class="card">
+    <h2 id="win-title">أحسنت!</h2>
+    <div class="stars-big" id="win-stars">★★★</div>
+    <p id="win-desc"></p>
+    <div class="actions">
+      <button class="ghost-btn" id="btn-replay">🔁 جولة جديدة</button>
+      <button class="big-btn" id="btn-back">الألعاب 🏠</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../shared/firebase-config.js"></script>
+<script src="../shared/progress.js"></script>
+<script src="../shared/economy-config.js"></script>
+<script src="../shared/economy.js"></script>
+<script>
+const profile = Fakker.Profile.get();
+if (!profile) location.href = "../index.html";
+
+Fakker.mountSettingsToggle();
+function refreshWallet() { document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance; }
+refreshWallet();
+
+const params = new URLSearchParams(location.search);
+const levelId = parseInt(params.get("level")) || 1;
+const TOTAL_QUESTIONS = 6;
+const TIME_PER_Q = 20;
+
+function q(text, choices, correct, tiles) { return { text, choices, correct, tiles: tiles || null }; }
+
+const POOLS = {
+  1: [ // أول ابتدائي: حرف البداية، الحرف الناقص، ترتيب كلمة ثلاثية
+    q("ما الحرف الذي بدأت به كلمة «قمر»؟", ["ق","ر","م","ن"], "ق"),
+    q("ما الحرف الذي بدأت به كلمة «شمس»؟", ["ش","س","م","ص"], "ش"),
+    q("ما الحرف الذي بدأت به كلمة «باب»؟", ["ب","ت","ن","ث"], "ب"),
+    q("ما الحرف الذي بدأت به كلمة «ديك»؟", ["د","ذ","ر","ز"], "د"),
+    q("أكمل الكلمة: ـلم  (والمقصود: قلم)", ["ق","ك","ف","ب"], "ق"),
+    q("أكمل الكلمة: بـ ـت  (والمقصود: بيت)", ["ي","و","ا","ن"], "ي"),
+    q("أكمل الكلمة: قلـ ـ  (والمقصود: قلب)", ["ب","ت","د","ر"], "ب"),
+    q("أكمل الكلمة: ـتاب  (والمقصود: كتاب)", ["ك","ب","س","ل"], "ك"),
+    q("رتّب الحروف لتكوّن كلمة صحيحة", ["قلم","ملق","لقم","قمل"], "قلم", ["م","ل","ق"]),
+    q("رتّب الحروف لتكوّن كلمة صحيحة", ["شمس","مشس","سمش","شسم"], "شمس", ["س","م","ش"]),
+    q("رتّب الحروف لتكوّن كلمة صحيحة", ["عيد","ديع","يعد","عدي"], "عيد", ["د","ي","ع"]),
+  ],
+  2: [ // ثاني وثالث: ترتيب كلمات أطول + كلمات المدّ
+    q("رتّب الحروف لتكوّن كلمة صحيحة", ["مدرسة","سدرمة","رمدسة","دمرسة"], "مدرسة", ["ة","س","ر","د","م"]),
+    q("رتّب الحروف لتكوّن كلمة صحيحة (تلميح: مكان الكتب)", ["مكتبة","بكتمة","تكمبة","كمتبة"], "مكتبة", ["ب","ت","ك","م","ة"]),
+    q("رتّب الحروف لتكوّن كلمة صحيحة", ["حقيبة","قحيبة","بحيقة","يحقبة"], "حقيبة", ["ح","ق","ي","ب","ة"]),
+    q("رتّب الحروف لتكوّن كلمة صحيحة (تلميح: تُستخدم للكتابة والمسح)", ["دفتر","رفتد","تدرف","فردت"], "دفتر", ["ر","ف","ت","د"]),
+    q("ما حرف المدّ في كلمة «كِتاب»؟", ["ا","و","ي","لا يوجد"], "ا"),
+    q("ما حرف المدّ في كلمة «نور»؟", ["و","ا","ي","لا يوجد"], "و"),
+    q("ما حرف المدّ في كلمة «مدير»؟", ["ي","ا","و","لا يوجد"], "ي"),
+    q("أي كلمة فيها حرف مدّ؟", ["قلم","كتب","قال","نظر"], "قال"),
+    q("أي كلمة لا يوجد فيها حرف مدّ؟", ["كتاب","نور","مدير","قلم"], "قلم"),
+  ],
+  3: [ // رابع-خامس-سادس: ترتيب كلمات لجملة، وجمل لقصة
+    q("رتّب الكلمات لتكوّن جملة صحيحة", ["ذهب الطالب إلى المدرسة","المدرسة ذهب إلى الطالب","إلى ذهب المدرسة الطالب","الطالب المدرسة ذهب إلى"], "ذهب الطالب إلى المدرسة", ["المدرسة","إلى","الطالب","ذهب"]),
+    q("رتّب الكلمات لتكوّن جملة صحيحة", ["يلعب الأطفال في الحديقة","في يلعب الحديقة الأطفال","الأطفال الحديقة في يلعب","يلعب في الأطفال الحديقة"], "يلعب الأطفال في الحديقة", ["الحديقة","في","الأطفال","يلعب"]),
+    q("رتّب الكلمات لتكوّن جملة صحيحة", ["يقرأ الطالب كتابه بعناية","بعناية يقرأ كتابه الطالب","الطالب بعناية يقرأ كتابه","كتابه يقرأ الطالب بعناية"], "يقرأ الطالب كتابه بعناية", ["كتابه","يقرأ","بعناية","الطالب"]),
+    q("رتّب الكلمات لتكوّن جملة صحيحة", ["جلس الطفل تحت الشجرة","تحت جلس الطفل الشجرة","الطفل تحت جلس الشجرة","جلس تحت الطفل الشجرة"], "جلس الطفل تحت الشجرة", ["الشجرة","تحت","الطفل","جلس"]),
+    q("ما ترتيب الجمل الصحيح لتكوين قصة؟\n(أ) ثم عاد إلى بيته سعيداً\n(ب) استيقظ أحمد باكراً\n(جـ) ذهب أحمد إلى المدرسة", ["ب-جـ-أ","أ-ب-جـ","جـ-ب-أ","ب-أ-جـ"], "ب-جـ-أ"),
+    q("ما ترتيب الجمل الصحيح لتكوين قصة؟\n(أ) سقطت البذرة في التربة\n(ب) نمت لتصبح شجرة كبيرة\n(جـ) زرع الفلاح بذرة", ["جـ-أ-ب","أ-ب-جـ","ب-جـ-أ","جـ-ب-أ"], "جـ-أ-ب"),
+    q("ما ترتيب الجمل الصحيح لتكوين قصة؟\n(أ) طبخت الأم الطعام\n(ب) اشترت الأم الخضار من السوق\n(جـ) أكلت العائلة الطعام معاً", ["ب-أ-جـ","أ-ب-جـ","جـ-ب-أ","ب-جـ-أ"], "ب-أ-جـ"),
+    q("ما ترتيب الجمل الصحيح لتكوين قصة؟\n(أ) فاز الفريق بالمباراة\n(ب) بدأ اللاعبون التدريب بجد\n(جـ) احتفل الجميع بالفوز", ["ب-أ-جـ","أ-ب-جـ","جـ-أ-ب","ب-جـ-أ"], "ب-أ-جـ"),
+  ],
+  4: [ // متوسط: تناظر لفظي + مفردة شاذة + صغار الحيوانات + صفات الألوان
+    q("سيف : قتال  ::  مظلة : ؟", ["حماية من المطر","الجري","الطبخ","النوم"], "حماية من المطر"),
+    q("فرن : خبز  ::  مصنع : ؟", ["إنتاج","نوم","سفر","قراءة"], "إنتاج"),
+    q("عين : رؤية  ::  أذن : ؟", ["سمع","شم","تذوق","لمس"], "سمع"),
+    q("أي كلمة شاذة لا تنتمي للمجموعة؟", ["تفاحة","برتقال","عنب","طاولة"], "طاولة"),
+    q("أي كلمة شاذة لا تنتمي للمجموعة؟", ["أسد","نمر","ذئب","وردة"], "وردة"),
+    q("أي كلمة شاذة لا تنتمي للمجموعة؟", ["قلم","كتاب","دفتر","موزة"], "موزة"),
+    q("ما اسم صغير الأسد؟", ["شبل","جرو","مهر","عجل"], "شبل"),
+    q("ما اسم صغير الكلب؟", ["جرو","شبل","حَمَل","فصيل"], "جرو"),
+    q("ما اسم صغير الغنم؟", ["حَمَل","شبل","مهر","جرو"], "حَمَل"),
+    q("ما اسم صغير الحصان؟", ["مهر","شبل","جرو","حَمَل"], "مهر"),
+    q("ما اسم صغير الإبل؟", ["فصيل","شبل","مهر","جرو"], "فصيل"),
+    q("أبيض ___ (صفة تدل على شدة البياض)", ["ناصع","قاتم","فاقع","باهت"], "ناصع"),
+    q("أسود ___ (صفة تدل على شدة السواد)", ["حالك","ناصع","فاتح","باهت"], "حالك"),
+    q("أحمر ___ (صفة تدل على شدة الحمرة)", ["قانٍ","باهت","فاتح","شاحب"], "قانٍ"),
+    q("أخضر ___ (صفة تصف النبات المورق)", ["يانع","قاتم","باهت","شاحب"], "يانع"),
+    q("أصفر ___ (صفة تدل على شدة الصفرة)", ["فاقع","حالك","قانٍ","باهت"], "فاقع"),
+  ],
+  5: [ // ثانوي: قدرات مختلطة (تناظر معقد + منطق جمل + رياضيات)
+    q("كاتب : رواية  ::  ملحّن : ؟", ["لحن","قصيدة","لوحة","مسرحية"], "لحن"),
+    q("مريض : طبيب  ::  متّهم : ؟", ["محامٍ","معلم","مهندس","طيار"], "محامٍ"),
+    q("جائع : طعام  ::  عطشان : ؟", ["ماء","نوم","كتاب","لعب"], "ماء"),
+    q("«رغم أن الجو كان بارداً، إلا أن أحمد خرج بدون معطف» — ماذا نتوقع أن يحدث؟", ["أن يشعر بالبرد","أن يشعر بالحر","أن يبقى دافئاً بلا سبب","لا شيء مما سبق"], "أن يشعر بالبرد"),
+    q("«لم يذاكر خالد للاختبار، لكنه حصل على الدرجة الكاملة» — أي وصف أقرب للموقف؟", ["أمر مستغرب","أمر متوقع تماماً","أمر مستحيل الحدوث","أمر عادي جداً"], "أمر مستغرب"),
+    q("سيارة تسير بسرعة 80 كم/ساعة، كم تقطع خلال ساعة ونصف؟", ["100 كم","120 كم","140 كم","160 كم"], "120 كم"),
+    q("عدد إذا ضربته في 3 ثم طرحت منه 5 يصبح الناتج 16. ما هو العدد؟", ["5","6","7","8"], "7"),
+    q("فريق نسبة فوزه إلى خسارته 3:2 من أصل 20 مباراة. كم مباراة فاز بها؟", ["8","10","12","14"], "12"),
+  ],
+};
+
+const THEMES = {
+  1: { emoji: "🔤", title: "حروف وكلمات", subtitle: "الحرف الأول، الحرف الناقص، ورتّب الحروف" },
+  2: { emoji: "🧵", title: "نسيج الكلمات", subtitle: "كلمات أطول وحروف المدّ" },
+  3: { emoji: "📝", title: "جُمل وحكايات", subtitle: "رتّب الكلمات جملة، ورتّب الجمل قصة" },
+  4: { emoji: "🔗", title: "علاقات ومفردات", subtitle: "تناظر، مفردة شاذة، صغار الحيوانات، وصفات الألوان" },
+  5: { emoji: "🎓", title: "قدرات لغوية وكمّية", subtitle: "تفكير مركّب: لفظي ورياضي معاً" },
+};
+
+const cfg = THEMES[levelId] || THEMES[1];
+const pool = POOLS[levelId] || POOLS[1];
+document.getElementById("theme-emoji").textContent = cfg.emoji;
+document.getElementById("theme-title").textContent = cfg.title;
+document.getElementById("theme-subtitle").textContent = cfg.subtitle;
+
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let session = null, timerHandle = null, timeLeft = TIME_PER_Q, queue = [];
+let powerupsLeft = 2;
+
+function startSession() {
+  session = { qIndex: 0, correctCount: 0, streak: 0, best: 0, current: null };
+  queue = shuffle(pool).slice(0, TOTAL_QUESTIONS);
+  document.getElementById("score-count").textContent = 0;
+  powerupsLeft = 2;
+  updatePowerupUI();
+  updateStreakUI();
+  nextQuestion();
+}
+
+function updatePowerupUI() {
+  document.getElementById("powerup-count").textContent = powerupsLeft;
+  document.getElementById("powerup-5050").classList.toggle("disabled", powerupsLeft <= 0);
+}
+
+function usePowerup5050() {
+  if (powerupsLeft <= 0) return;
+  const buttons = Array.from(document.querySelectorAll(".choice-btn:not(.eliminated)"));
+  const wrongButtons = buttons.filter((b) => b.textContent !== session.current.correct);
+  if (wrongButtons.length < 2) return;
+  shuffle(wrongButtons).slice(0, 2).forEach((b) => b.classList.add("eliminated"));
+  powerupsLeft--;
+  updatePowerupUI();
+  Fakker.Economy.spendHint();
+  refreshWallet();
+  Fakker.FX.playTone([392], 0.1);
+}
+document.getElementById("powerup-5050").onclick = usePowerup5050;
+
+function updateStreakUI() {
+  const pill = document.getElementById("streak-pill");
+  pill.textContent = "🔥 " + session.streak;
+  pill.classList.toggle("hot", session.streak >= 3);
+}
+
+const MASCOT_HINTS = [
+  "خذ وقتك وفكّر جيداً 🤔",
+  "أنا واثق إنك تعرف الإجابة!",
+  "تذكّر: القراءة تفتح كل الأبواب 📖",
+  "هيا يا بطل، أثبت فصاحتك!",
+];
+
+function setMascot(text, mood) {
+  document.getElementById("mascot-bubble").textContent = text;
+  const av = document.getElementById("mascot-avatar");
+  av.classList.remove("happy", "oops");
+  if (mood) { void av.offsetWidth; av.classList.add(mood); }
+}
+
+function nextQuestion() {
+  if (session.qIndex >= TOTAL_QUESTIONS) return endSession();
+  session.current = { ...queue[session.qIndex], choices: shuffle(queue[session.qIndex].choices) };
+  session.qIndex++;
+  document.getElementById("qtext").textContent = session.current.text;
+  document.getElementById("qcounter").textContent = `سؤال ${session.qIndex} من ${TOTAL_QUESTIONS}`;
+
+  const tilesRow = document.getElementById("tiles-row");
+  if (session.current.tiles) {
+    tilesRow.hidden = false;
+    tilesRow.innerHTML = "";
+    session.current.tiles.forEach((t, i) => {
+      const chip = document.createElement("div");
+      chip.className = "tile-chip";
+      chip.textContent = t;
+      chip.style.animationDelay = (i * 0.06) + "s";
+      tilesRow.appendChild(chip);
+    });
+  } else {
+    tilesRow.hidden = true;
+    tilesRow.innerHTML = "";
+  }
+
+  setMascot(MASCOT_HINTS[Math.floor(Math.random() * MASCOT_HINTS.length)]);
+
+  const choicesEl = document.getElementById("choices");
+  choicesEl.innerHTML = "";
+  session.current.choices.forEach((c) => {
+    const b = document.createElement("div");
+    b.className = "choice-btn";
+    b.textContent = c;
+    b.onclick = () => answer(c, b);
+    choicesEl.appendChild(b);
+  });
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerHandle);
+  timeLeft = TIME_PER_Q;
+  const fill = document.getElementById("timer-fill");
+  fill.style.width = "100%";
+  fill.classList.remove("danger");
+  timerHandle = setInterval(() => {
+    timeLeft -= 0.1;
+    const pct = Math.max(0, (timeLeft / TIME_PER_Q) * 100);
+    fill.style.width = pct + "%";
+    if (pct < 25) fill.classList.add("danger");
+    if (timeLeft <= 0) { clearInterval(timerHandle); answer(null, null); }
+  }, 100);
+}
+
+function answer(choice, btnEl) {
+  clearInterval(timerHandle);
+  const buttons = document.querySelectorAll(".choice-btn");
+  buttons.forEach((b) => b.setAttribute("disabled", "true"));
+  const correct = session.current.correct;
+  const isCorrect = choice === correct;
+  buttons.forEach((b) => { if (b.textContent === correct) b.classList.add("correct"); });
+  if (!isCorrect && btnEl) btnEl.classList.add("wrong");
+
+  if (isCorrect) {
+    session.correctCount++; session.streak++; session.best = Math.max(session.best, session.streak);
+    Fakker.FX.success();
+    const result = Fakker.Economy.awardCorrect(session.streak);
+    const streakTxt = result.message ? " " + result.message : "";
+    setMascot(`${Fakker.FX.randomPraise()} +${result.points} نقطة${streakTxt}`, "happy");
+  } else {
+    session.streak = 0;
+    Fakker.FX.wrong();
+    const result = Fakker.Economy.awardWrong();
+    setMascot(Fakker.FX.randomEncourage() + ` (${result.points}) الإجابة الصحيحة: ` + correct, "oops");
+  }
+  refreshWallet();
+  document.getElementById("score-count").textContent = session.correctCount;
+  updateStreakUI();
+  setTimeout(nextQuestion, 900);
+}
+
+function computeStars() {
+  const ratio = session.correctCount / TOTAL_QUESTIONS;
+  if (ratio >= 0.85) return 3;
+  if (ratio >= 0.6) return 2;
+  return 1;
+}
+
+function endSession() {
+  const stars = computeStars();
+  Fakker.Progress.record("fasihoon", levelId, { stars, score: session.correctCount });
+  Fakker.Analytics.logPlay("fasihoon");
+  Fakker.Economy.awardCompletion("فصحون");
+  refreshWallet();
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = session.correctCount === TOTAL_QUESTIONS ? "فصيح حقيقي! 📖✨" : Fakker.FX.randomPraise();
+  document.getElementById("win-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  document.getElementById("win-desc").textContent = `أجبت صح على ${session.correctCount} من ${TOTAL_QUESTIONS} — أفضل تتابع: ${session.best} 🔥`;
+  document.getElementById("win-overlay").hidden = false;
+}
+
+document.getElementById("btn-replay").onclick = () => { document.getElementById("win-overlay").hidden = true; startSession(); };
+document.getElementById("btn-back").onclick = () => { location.href = "../index.html"; };
+
+startSession();
+</script>
+</body>
+</html>

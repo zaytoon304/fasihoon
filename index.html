@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فصحون — تعلّم اللغة العربية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/style.css">
+<style>
+  :root { --fasih-gold: #b8860b; --fasih-gold-light: #e8c766; }
+
+  .hero { text-align: center; padding: 30px 20px 10px; }
+  .hero .logo { font-size: 56px; display: inline-block; animation: pop-in .5s ease; }
+  .hero h1 { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 34px; color: var(--fasih-gold); margin-top: 6px; }
+  .hero p { margin-top: 6px; font-size: 16px; }
+
+  #welcome-screen .card { max-width: 420px; margin: 0 auto; text-align: center; }
+  .avatar-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 16px 0 20px; }
+  .avatar-choice {
+    font-size: 28px; background: var(--accent-soft); border-radius: 14px; width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .avatar-choice.selected { box-shadow: 0 0 0 3px var(--fasih-gold); transform: scale(1.08); }
+  #name-input {
+    width: 100%; padding: 14px 16px; font-size: 18px; font-family: inherit; border-radius: var(--radius-md);
+    border: 2px solid var(--accent-soft); text-align: center; margin-bottom: 16px;
+  }
+  #name-input:focus { outline: none; border-color: var(--fasih-gold); }
+
+  .student-pill { display: flex; align-items: center; gap: 8px; }
+  .student-pill .av { font-size: 20px; }
+
+  .activities-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 26px;
+  }
+  .activity-card {
+    border-radius: var(--radius-lg); padding: 30px 22px; box-shadow: 0 4px 10px rgba(0,0,0,.08), 0 16px 30px var(--shadow);
+    color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: transform .18s ease, box-shadow .18s ease; position: relative; overflow: hidden; isolation: isolate;
+  }
+  .activity-card::before {
+    content: ""; position: absolute; inset: 0; background: linear-gradient(155deg, rgba(255,255,255,.32), rgba(255,255,255,0) 55%); pointer-events: none;
+  }
+  .activity-card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,.1), 0 20px 36px var(--shadow); }
+  .activity-card:active { transform: scale(0.97); }
+  .activity-card .icon-badge {
+    width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(155deg, rgba(255,255,255,.55), rgba(255,255,255,.12));
+    display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 4px;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,.4), 0 4px 10px rgba(0,0,0,.12);
+  }
+  .activity-card h3 { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 24px; text-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .activity-card p { color: rgba(255,255,255,.92); font-size: 14px; line-height: 1.6; }
+  .activity-card[data-a="fasihoon"] { background: linear-gradient(155deg, var(--fasih-gold-light), var(--fasih-gold)); }
+  .activity-card[data-a="asas"] { background: linear-gradient(155deg, #34d976, #16a34a); }
+
+  .levels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+  .level-card {
+    border-radius: var(--radius-lg); padding: 26px 18px 24px; box-shadow: 0 4px 10px rgba(0,0,0,.08), 0 16px 30px var(--shadow);
+    color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: transform .18s ease, box-shadow .18s ease; position: relative; overflow: hidden; isolation: isolate;
+  }
+  .level-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(155deg, rgba(255,255,255,.32), rgba(255,255,255,0) 55%); pointer-events: none; }
+  .level-card:hover { transform: translateY(-3px); }
+  .level-card:active { transform: scale(0.97); }
+  .level-card .icon-badge {
+    width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(155deg, rgba(255,255,255,.55), rgba(255,255,255,.12));
+    display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 4px;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,.4), 0 4px 10px rgba(0,0,0,.12);
+  }
+  .level-card h3 { font-size: 21px; text-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .level-card p { color: rgba(255,255,255,.92); font-size: 13px; }
+  .level-card[data-level="1"] { background: linear-gradient(155deg, #34d976, #16a34a); }
+  .level-card[data-level="2"] { background: linear-gradient(155deg, #4f93ff, #1d4ed8); }
+  .level-card[data-level="3"] { background: linear-gradient(155deg, #bd6bfb, #7e22ce); }
+  .level-card[data-level="4"] { background: linear-gradient(155deg, #fb9147, #c2410c); }
+  .level-card[data-level="5"] { background: linear-gradient(155deg, #f56464, #b91c1c); }
+
+  .back-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; cursor: pointer; color: var(--fasih-gold); font-weight: 800; width: fit-content; }
+
+  [hidden] { display: none !important; }
+  @media (max-width: 480px) { .hero h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="logo-emoji">📖</span> فصحون</div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span class="pill" id="wallet-pill" hidden>🪙 0</span>
+    <a href="store.html" class="pill" id="store-link" hidden>🎁 المتجر</a>
+    <div id="student-badge" class="pill student-pill" hidden>
+      <span class="av"></span><span class="name"></span><span>⭐ <span class="stars">0</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة الترحيب -->
+<section id="welcome-screen" class="center-screen">
+  <div class="card">
+    <h2>أهلاً فيك! 👋</h2>
+    <p style="margin-top:8px;">وش اسمك؟</p>
+    <input id="name-input" type="text" maxlength="20" placeholder="اكتب اسمك هنا">
+    <p style="margin-bottom:8px;">اختر شخصيتك</p>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <button class="big-btn" id="start-btn" style="width:100%;">يلا نبدأ 🚀</button>
+  </div>
+</section>
+
+<!-- الصفحة الرئيسية -->
+<main class="container" id="home-screen" hidden>
+  <div class="hero">
+    <div class="logo">📖</div>
+    <h1>فصحون</h1>
+    <p id="hero-greeting">تعلّم اللغة العربية قراءةً وكتابةً، مع الأستاذ فصيح</p>
+  </div>
+  <div class="activities-grid">
+    <div class="activity-card" data-a="fasihoon">
+      <div class="icon-badge">📖</div>
+      <h3>فصحون</h3>
+      <p>تحدٍّ لغوي حسب صفّك: حروف، كلمات، جُمل، وقدرات لغوية</p>
+    </div>
+    <div class="activity-card" data-a="asas">
+      <div class="icon-badge">🌱</div>
+      <h3>أساس القراءة</h3>
+      <p>لسه ما تعرف تقرأ؟ ابدأ من هنا — صوت وصور، خطوة خطوة بدون عجلة</p>
+    </div>
+  </div>
+</main>
+
+<!-- شاشة اختيار المستوى الدراسي (لفصحون فقط) -->
+<main class="container" id="levels-screen" hidden>
+  <div class="back-row" id="back-to-home">→ رجوع للرئيسية</div>
+  <div class="levels-grid" id="levels-grid"></div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="shared/firebase-config.js"></script>
+<script src="shared/progress.js"></script>
+<script src="shared/economy-config.js"></script>
+<script src="shared/economy.js"></script>
+<script>
+  const AVATARS = ["🦊","🐼","🦁","🐸","🦉","🐢","🐯","🦄","🐧","🐝"];
+  let selectedAvatar = AVATARS[0];
+
+  function renderAvatarGrid() {
+    const grid = document.getElementById("avatar-grid");
+    grid.innerHTML = "";
+    AVATARS.forEach((av) => {
+      const el = document.createElement("div");
+      el.className = "avatar-choice" + (av === selectedAvatar ? " selected" : "");
+      el.textContent = av;
+      el.onclick = () => { selectedAvatar = av; renderAvatarGrid(); };
+      grid.appendChild(el);
+    });
+  }
+
+  function showStudentBadge(profile) {
+    const badge = document.getElementById("student-badge");
+    badge.hidden = false;
+    badge.querySelector(".av").textContent = profile.avatar;
+    badge.querySelector(".name").textContent = profile.name;
+    badge.querySelector(".stars").textContent = Fakker.Progress.totalStars();
+    const greetings = ["هيا يا بطل، اختر نشاطك وابدأ!", "مستعد لتحدٍّ جديد؟", "كل يوم فرصة تتعلّم فيها شي جديد!"];
+    document.getElementById("hero-greeting").textContent = profile.name + "، " + greetings[Math.floor(Math.random() * greetings.length)];
+    document.getElementById("wallet-pill").hidden = false;
+    document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance;
+    document.getElementById("store-link").hidden = false;
+  }
+
+  function goHome() {
+    document.getElementById("welcome-screen").hidden = true;
+    document.getElementById("levels-screen").hidden = true;
+    document.getElementById("home-screen").hidden = false;
+  }
+
+  function renderLevels() {
+    const grid = document.getElementById("levels-grid");
+    grid.innerHTML = "";
+    FAKKER_LEVELS.forEach((lv) => {
+      const el = document.createElement("div");
+      el.className = "level-card";
+      el.setAttribute("data-level", lv.id);
+      el.innerHTML = `<div class="icon-badge">${lv.icon}</div><h3>${lv.short}</h3><p>${lv.grade}</p>`;
+      el.onclick = () => { location.href = "games/fasihoon.html?level=" + lv.id; };
+      grid.appendChild(el);
+    });
+  }
+
+  document.querySelectorAll(".activity-card").forEach((card) => {
+    card.onclick = () => {
+      const a = card.dataset.a;
+      if (a === "asas") { location.href = "games/asas.html"; return; }
+      document.getElementById("home-screen").hidden = true;
+      document.getElementById("levels-screen").hidden = false;
+      renderLevels();
+    };
+  });
+  document.getElementById("back-to-home").onclick = goHome;
+
+  document.getElementById("start-btn").onclick = () => {
+    const name = document.getElementById("name-input").value.trim();
+    if (!name) {
+      document.getElementById("name-input").focus();
+      document.getElementById("name-input").style.borderColor = "#ef4444";
+      return;
+    }
+    const profile = Fakker.Profile.create(name, selectedAvatar);
+    showStudentBadge(profile);
+    goHome();
+  };
+
+  // بدء التشغيل
+  Fakker.mountSettingsToggle();
+  renderAvatarGrid();
+  const existing = Fakker.Profile.get();
+  if (existing) { showStudentBadge(existing); goHome(); }
+  else { document.getElementById("welcome-screen").hidden = false; }
+</script>
+</body>
+</html>
