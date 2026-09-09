@@ -870,7 +870,10 @@ function pgAnswerKey(field) {
 function pgBindAnswer(el, field) {
   const key = pgAnswerKey(field);
   try { el.value = localStorage.getItem(key) || ""; } catch (e) {}
-  el.oninput = () => { try { localStorage.setItem(key, el.value); } catch (e) {} };
+  el.oninput = () => {
+    try { localStorage.setItem(key, el.value); } catch (e) {}
+    if (Fakker.Answers) Fakker.Answers.save(curStage.id, pgSession.index, field, el.value);
+  };
 }
 
 function renderPassage() {

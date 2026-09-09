@@ -69,6 +69,19 @@
   .bar-row.zero .bar-label { color: #dc2626; }
 
   [hidden] { display: none !important; }
+
+  .student-card { background: var(--card-bg); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; box-shadow: 0 4px 12px var(--shadow); }
+  .student-card .head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .student-card .head .av { font-size: 24px; }
+  .student-card .head .name { font-weight: 800; flex: 1; }
+  .student-card .head .count { font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 3px 10px; border-radius: 999px; font-weight: 800; }
+  .answer-detail { margin-top: 12px; border-top: 1px solid var(--accent-soft); padding-top: 10px; display: none; }
+  .answer-detail.open { display: block; }
+  .answer-detail .stage-title { font-weight: 800; font-size: 13px; color: var(--asas-gold, var(--accent)); margin: 10px 0 4px; }
+  .answer-item { font-size: 13px; padding: 6px 10px; background: var(--bg); border-radius: 8px; margin-bottom: 6px; }
+  .answer-item .q { color: var(--text-soft); font-size: 12px; margin-bottom: 2px; }
+  .answer-item .a { font-weight: 700; }
+  .no-firebase-note { text-align: center; padding: 30px 16px; color: var(--text-soft); }
 </style>
 </head>
 <body>
@@ -102,6 +115,7 @@
 
   <div class="tabs">
     <div class="tab-btn active" data-tab="requests">طلبات الاستبدال</div>
+    <div class="tab-btn" data-tab="answers">✍️ إجابات الطلاب</div>
     <div class="tab-btn" data-tab="rewards">إدارة المكافآت</div>
     <div class="tab-btn" data-tab="stats">📊 الإحصائيات</div>
     <div class="tab-btn" data-tab="config">إعدادات النقاط</div>
@@ -110,6 +124,7 @@
   </div>
 
   <div class="tab-panel" id="panel-requests"></div>
+  <div class="tab-panel" id="panel-answers" hidden></div>
   <div class="tab-panel" id="panel-rewards" hidden></div>
   <div class="tab-panel" id="panel-stats" hidden></div>
   <div class="tab-panel" id="panel-config" hidden></div>
@@ -120,6 +135,12 @@
 <script src="shared/progress.js"></script>
 <script src="shared/economy-config.js"></script>
 <script src="shared/economy.js"></script>
+<script src="shared/asas-data.js"></script>
+<script src="shared/asas-data-phase2.js"></script>
+<script src="shared/asas-data-phase3.js"></script>
+<script src="shared/asas-data-phase4.js"></script>
+<script src="shared/asas-data-phase5.js"></script>
+<script src="shared/asas-data-phase6.js"></script>
 <script>
 const profile = Fakker.Profile.get();
 if (!profile) location.href = "index.html";
@@ -153,11 +174,86 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 
 function renderAll() {
   renderRequests();
+  renderAnswers();
   renderRewards();
   renderStats();
   renderConfig();
   renderLedger();
   renderSecurity();
+}
+
+// ---------- إجابات الطلاب (قِطع القراءة) ----------
+function stagePassageLabel(stageId, passageIndex) {
+  const stage = (typeof ASAS_STAGES !== "undefined") ? ASAS_STAGES.find((s) => s.id == stageId) : null;
+  if (!stage) return { stageTitle: "مرحلة #" + stageId, passageTitle: "مقطع #" + passageIndex };
+  const item = stage.items && stage.items[passageIndex];
+  return { stageTitle: stage.title, passageTitle: item ? item.title : ("مقطع #" + passageIndex) };
+}
+function fieldLabel(field, stageId, passageIndex) {
+  if (field === "complete") return "أكمل القصة";
+  if (field === "ending") return "الخاتمة";
+  const stage = (typeof ASAS_STAGES !== "undefined") ? ASAS_STAGES.find((s) => s.id == stageId) : null;
+  const item = stage && stage.items && stage.items[passageIndex];
+  if (field.startsWith("q") && item) {
+    const qs = item.comprehension || item.questions;
+    const i = parseInt(field.slice(1));
+    if (qs && qs[i]) return qs[i];
+  }
+  if (field.startsWith("ex") && item && item.extract) {
+    const i = parseInt(field.slice(2));
+    if (item.extract[i]) return item.extract[i];
+  }
+  return field;
+}
+
+function renderAnswers() {
+  const panel = document.getElementById("panel-answers");
+  if (!Fakker.Progress.db) {
+    panel.innerHTML = `<div class="no-firebase-note">📡 هذا التبويب يحتاج Firebase مفعّل عشان يجيب إجابات الطلاب من كل الأجهزة.<br>بدونه، إجابات كل طالب محفوظة على جهازه فقط.</div>`;
+    return;
+  }
+  panel.innerHTML = `<p style="text-align:center;">⏳ جاري تحميل إجابات الطلاب...</p>`;
+  Fakker.Answers.fetchAllStudents((students) => {
+    if (!students.length) { panel.innerHTML = `<p style="text-align:center;">لا يوجد طلاب سجّلوا بعد.</p>`; return; }
+    panel.innerHTML = "";
+    students.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    students.forEach((st) => {
+      const answers = st.answers || {};
+      let count = 0;
+      const rowsHtml = [];
+      Object.keys(answers).forEach((stageId) => {
+        rowsHtml.push(`<div class="stage-title">${stagePassageLabel(stageId, 0).stageTitle}</div>`);
+        Object.keys(answers[stageId]).forEach((passageIndex) => {
+          const { passageTitle } = stagePassageLabel(stageId, passageIndex);
+          const fields = answers[stageId][passageIndex];
+          Object.keys(fields).forEach((field) => {
+            const entry = fields[field];
+            if (!entry || !entry.text || !entry.text.trim()) return;
+            count++;
+            rowsHtml.push(`
+              <div class="answer-item">
+                <div class="q">${passageTitle} — ${fieldLabel(field, stageId, passageIndex)}</div>
+                <div class="a">${entry.text}</div>
+              </div>`);
+          });
+        });
+      });
+      const card = document.createElement("div");
+      card.className = "student-card";
+      const lastDate = st.updatedAt ? new Date(st.updatedAt).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "";
+      card.innerHTML = `
+        <div class="head">
+          <span class="av">${st.avatar || "🧒"}</span>
+          <span class="name">${st.name || "طالب"}</span>
+          <span style="font-size:11px;color:var(--text-soft);">${lastDate}</span>
+          <span class="count">${count} إجابة</span>
+        </div>
+        <div class="answer-detail">${rowsHtml.join("") || '<p style="text-align:center;color:var(--text-soft);">ما كتب إجابات مكتوبة بعد.</p>'}</div>
+      `;
+      card.querySelector(".head").onclick = () => card.querySelector(".answer-detail").classList.toggle("open");
+      panel.appendChild(card);
+    });
+  });
 }
 
 // ---------- الإحصائيات ----------

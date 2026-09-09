@@ -89,6 +89,36 @@ Fakker.Progress = {
   },
 };
 
+// إجابات الطالب المكتوبة بقِطع القراءة — تُحفظ محلياً دايماً، وعلى Firebase لو مفعّل (عشان المعلم يشوفها من جهازه)
+Fakker.Answers = {
+  _timers: {},
+  save(stageId, passageIndex, field, value) {
+    const profile = Fakker.Profile.get();
+    if (!Fakker.Progress.db || !profile) return;
+    const key = stageId + "_" + passageIndex + "_" + field;
+    clearTimeout(this._timers[key]);
+    this._timers[key] = setTimeout(() => {
+      Fakker.Progress.db.ref(`students/${profile.id}/answers/${stageId}/${passageIndex}/${field}`).set({
+        text: value,
+        studentName: profile.name,
+        studentAvatar: profile.avatar,
+        updatedAt: Date.now(),
+      }).catch((e) => console.warn("فصحون: تعذّر حفظ الإجابة على Firebase", e));
+    }, 800);
+  },
+  // لوحة المعلم: تجيب كل الطلاب وإجاباتهم من Firebase دفعة وحدة
+  fetchAllStudents(callback) {
+    if (!Fakker.Progress.db) { callback([]); return; }
+    Fakker.Progress.db.ref("students").once("value")
+      .then((snap) => {
+        const val = snap.val() || {};
+        const list = Object.keys(val).map((id) => Object.assign({ id }, val[id]));
+        callback(list);
+      })
+      .catch((e) => { console.warn("فصحون: تعذّر جلب بيانات الطلاب", e); callback([]); });
+  },
+};
+
 // إحصائيات الاستخدام: كم مرة لُعبت كل نشاط
 Fakker.Analytics = {
   KEY: "fasihoon_analytics_plays",
