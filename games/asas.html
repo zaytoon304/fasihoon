@@ -927,6 +927,13 @@ document.getElementById("btn-replay").onclick = () => {
 };
 document.getElementById("btn-back").onclick = () => { document.getElementById("win-overlay").hidden = true; backToMap(); };
 
+// فتح كل المراحل دفعة وحدة (للمعلم وقت الحصة) — زُر: asas.html?unlock=all
+const _urlParams = new URLSearchParams(location.search);
+if (_urlParams.get("unlock") === "all") {
+  ASAS_STAGES.forEach((s) => Fakker.Progress.record("asas", s.id, { stars: 3, score: 999 }));
+  setMascot("فُتحت كل المراحل ✅ — هذا الرابط للمعلم بس، لا تشاركه بالطلاب");
+}
+
 // بدء التشغيل
 renderMap();
 </script>
