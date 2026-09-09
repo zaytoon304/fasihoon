@@ -175,10 +175,21 @@
   }
   .dict-chip { background: linear-gradient(160deg, var(--asas-gold-light), var(--asas-gold)); color: #3a2405; font-weight: 800; }
   .skill-note-card { background: #fef3c7; color: #92400e; border-radius: 12px; padding: 12px 14px; font-family: 'Amiri','Tajawal',serif; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-  .comp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--accent-soft); }
+  .comp-row { padding: 10px 0; border-bottom: 1px solid var(--accent-soft); }
   .comp-row:last-child { border-bottom: none; }
+  .comp-row .comp-top { display: flex; align-items: center; gap: 10px; }
   .comp-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .comp-text { flex: 1; font-size: 15px; }
+  .answer-box {
+    width: 100%; margin-top: 8px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--accent-soft);
+    font-family: 'Tajawal', inherit; font-size: 14px; background: var(--bg); color: var(--text); resize: vertical;
+  }
+  .answer-box:focus { outline: none; border-color: var(--asas-gold); }
+  .answer-box.mini-answer { min-height: 38px; rows: 1; }
+  .answer-box.big-answer { min-height: 70px; margin-top: 10px; }
+  .extract-row { padding: 8px 0; border-bottom: 1px solid var(--accent-soft); }
+  .extract-row:last-child { border-bottom: none; }
+  .extract-label { font-size: 14px; font-weight: 700; color: var(--text); }
   .mini-btn { flex-shrink: 0; font-size: 16px; padding: 4px 8px; border-radius: 8px; background: var(--accent-soft); cursor: pointer; }
   .dict-sentence-card { background: var(--card-bg); border: 2px solid var(--asas-gold-light); border-radius: 12px; padding: 12px 16px; font-family: 'Amiri','Tajawal',serif; font-size: 19px; display: flex; align-items: center; gap: 10px; margin-top: 8px; }
 </style>
@@ -300,7 +311,7 @@
         </div>
 
         <div id="pg-comp-section" hidden>
-          <div class="section-label">❓ أسئلة الفهم — ناقشها بصوت عالٍ</div>
+          <div class="section-label">❓ أسئلة الفهم — اكتب إجابتك أو ناقشها بصوت عالٍ</div>
           <div id="pg-comp-list"></div>
         </div>
 
@@ -309,6 +320,24 @@
           <div class="chip-row" id="pg-dict-words"></div>
           <div class="section-label">✏️ إملاء جملة</div>
           <div class="dict-sentence-card"><span id="pg-dict-sent-listen" class="mini-btn">🔊</span><span id="pg-dict-sent-text"></span></div>
+        </div>
+
+        <div id="pg-extract-section" hidden>
+          <div class="section-label">🔍 استخرج من القطعة</div>
+          <div id="pg-extract-list"></div>
+        </div>
+
+        <div id="pg-complete-section" hidden>
+          <div class="section-label">✍️ أكمل القصة</div>
+          <div class="skill-note-card" style="background:var(--card-bg); border:2px dashed var(--asas-gold-light); color:var(--text);">
+            <span id="pg-complete-listen" class="mini-btn">🔊</span><span id="pg-complete-text"></span>
+          </div>
+          <textarea class="answer-box big-answer" id="pg-complete-input" placeholder="اكمل القصة هنا..." rows="3"></textarea>
+        </div>
+
+        <div id="pg-ending-section" hidden>
+          <div class="section-label">🏁 ضع خاتمة مناسبة للقصة</div>
+          <textarea class="answer-box big-answer" id="pg-ending-input" placeholder="اكتب خاتمتك هنا..." rows="3"></textarea>
         </div>
       </div>
       <div style="text-align:center; margin-top:16px;">
@@ -341,6 +370,7 @@
 <script src="../shared/asas-data-phase3.js"></script>
 <script src="../shared/asas-data-phase2.js"></script>
 <script src="../shared/asas-data-phase4.js"></script>
+<script src="../shared/asas-data-phase5.js"></script>
 <script>
 const GAME_ID = "asas";
 const profile = Fakker.Profile.get();
@@ -832,6 +862,16 @@ function startPassages() {
   renderPassage();
 }
 
+// حفظ إجابات الطالب المكتوبة محلياً (بدون تصحيح آلي — بس عشان ما تضيع لو رجع لنفس المقطع)
+function pgAnswerKey(field) {
+  return "fk_asas_answer_" + curStage.id + "_" + pgSession.index + "_" + field;
+}
+function pgBindAnswer(el, field) {
+  const key = pgAnswerKey(field);
+  try { el.value = localStorage.getItem(key) || ""; } catch (e) {}
+  el.oninput = () => { try { localStorage.setItem(key, el.value); } catch (e) {} };
+}
+
 function renderPassage() {
   const p = curStage.items[pgSession.index];
   window.speechSynthesis && window.speechSynthesis.cancel();
@@ -872,8 +912,12 @@ function renderPassage() {
     questions.forEach((q, i) => {
       const row = document.createElement("div");
       row.className = "comp-row";
-      row.innerHTML = `<span class="comp-num">${i + 1}</span><span class="comp-text">${q}</span><span class="mini-btn">🔊</span>`;
+      row.innerHTML = `
+        <div class="comp-top"><span class="comp-num">${i + 1}</span><span class="comp-text">${q}</span><span class="mini-btn">🔊</span></div>
+        <textarea class="answer-box mini-answer" placeholder="اكتب إجابتك هنا..." rows="1"></textarea>
+      `;
       row.querySelector(".mini-btn").onclick = () => speak(q);
+      pgBindAnswer(row.querySelector("textarea"), "q" + i);
       list.appendChild(row);
     });
   } else compSection.hidden = true;
@@ -893,6 +937,37 @@ function renderPassage() {
     document.getElementById("pg-dict-sent-text").textContent = p.dictationSentence;
     document.getElementById("pg-dict-sent-listen").onclick = () => speak(p.dictationSentence);
   } else dictSection.hidden = true;
+
+  const extractSection = document.getElementById("pg-extract-section");
+  if (p.extract && p.extract.length) {
+    extractSection.hidden = false;
+    const list = document.getElementById("pg-extract-list");
+    list.innerHTML = "";
+    p.extract.forEach((prompt, i) => {
+      const row = document.createElement("div");
+      row.className = "extract-row";
+      row.innerHTML = `
+        <div class="extract-label">${i + 1}. ${prompt}</div>
+        <textarea class="answer-box mini-answer" placeholder="..." rows="1"></textarea>
+      `;
+      pgBindAnswer(row.querySelector("textarea"), "ex" + i);
+      list.appendChild(row);
+    });
+  } else extractSection.hidden = true;
+
+  const completeSection = document.getElementById("pg-complete-section");
+  if (p.completeStory) {
+    completeSection.hidden = false;
+    document.getElementById("pg-complete-text").textContent = p.completeStory;
+    document.getElementById("pg-complete-listen").onclick = () => speak(p.completeStory);
+    pgBindAnswer(document.getElementById("pg-complete-input"), "complete");
+  } else completeSection.hidden = true;
+
+  const endingSection = document.getElementById("pg-ending-section");
+  if (p.writeEnding) {
+    endingSection.hidden = false;
+    pgBindAnswer(document.getElementById("pg-ending-input"), "ending");
+  } else endingSection.hidden = true;
 }
 
 document.getElementById("pg-next").onclick = () => {
