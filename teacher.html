@@ -82,6 +82,26 @@
   .answer-item .q { color: var(--text-soft); font-size: 12px; margin-bottom: 2px; }
   .answer-item .a { font-weight: 700; }
   .no-firebase-note { text-align: center; padding: 30px 16px; color: var(--text-soft); }
+
+  .hw-create-card { max-width: 500px; margin: 0 auto 20px; text-align: center; }
+  .hw-create-card select {
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--accent-soft);
+    font-family: inherit; font-size: 14px; margin: 10px 0; background: var(--card-bg); color: var(--text);
+  }
+  .hw-link-row { display: flex; gap: 8px; margin-top: 12px; }
+  .hw-link-row input {
+    flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--accent-soft);
+    font-family: inherit; font-size: 12px; text-align: left; direction: ltr; background: var(--bg); color: var(--text);
+  }
+  .hw-card { background: var(--card-bg); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; box-shadow: 0 4px 12px var(--shadow); }
+  .hw-card .head { display: flex; align-items: center; gap: 10px; cursor: pointer; flex-wrap: wrap; }
+  .hw-card .head .title { font-weight: 800; flex: 1; }
+  .hw-card .head .date { font-size: 11px; color: var(--text-soft); }
+  .hw-card .head .count { font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 3px 10px; border-radius: 999px; font-weight: 800; }
+  .hw-students { margin-top: 10px; border-top: 1px solid var(--accent-soft); padding-top: 10px; display: none; }
+  .hw-students.open { display: block; }
+  .hw-student-row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 5px 0; }
+  .hw-student-row .stars { color: #d4a017; }
 </style>
 </head>
 <body>
@@ -115,6 +135,7 @@
 
   <div class="tabs">
     <div class="tab-btn active" data-tab="requests">طلبات الاستبدال</div>
+    <div class="tab-btn" data-tab="homework">📮 الواجبات</div>
     <div class="tab-btn" data-tab="answers">✍️ إجابات الطلاب</div>
     <div class="tab-btn" data-tab="rewards">إدارة المكافآت</div>
     <div class="tab-btn" data-tab="stats">📊 الإحصائيات</div>
@@ -124,6 +145,7 @@
   </div>
 
   <div class="tab-panel" id="panel-requests"></div>
+  <div class="tab-panel" id="panel-homework" hidden></div>
   <div class="tab-panel" id="panel-answers" hidden></div>
   <div class="tab-panel" id="panel-rewards" hidden></div>
   <div class="tab-panel" id="panel-stats" hidden></div>
@@ -132,6 +154,9 @@
   <div class="tab-panel" id="panel-security" hidden></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="shared/firebase-config.js"></script>
 <script src="shared/progress.js"></script>
 <script src="shared/economy-config.js"></script>
 <script src="shared/economy.js"></script>
@@ -175,12 +200,93 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 
 function renderAll() {
   renderRequests();
+  renderHomework();
   renderAnswers();
   renderRewards();
   renderStats();
   renderConfig();
   renderLedger();
   renderSecurity();
+}
+
+// ---------- الواجبات الإلكترونية ----------
+function renderHomework() {
+  const panel = document.getElementById("panel-homework");
+  if (!Fakker.Progress.db) {
+    panel.innerHTML = `<div class="no-firebase-note">📡 إنشاء الواجبات ومتابعتها يحتاج Firebase مفعّل، عشان الرابط يشتغل من أي جهاز ويوصلك تأكيد إن الطالب حل فعلاً.<br>بدونه، هذا التبويب لا يعمل.</div>`;
+    return;
+  }
+  panel.innerHTML = `
+    <div class="card hw-create-card">
+      <h3>➕ إنشاء واجب جديد</h3>
+      <select id="hw-stage-select">${ASAS_STAGES.map((s) => `<option value="${s.id}">${s.icon} ${s.title}</option>`).join("")}</select>
+      <button class="big-btn" id="hw-create-btn" style="width:100%;">إنشاء رابط الواجب 🔗</button>
+      <div id="hw-created-box" hidden>
+        <p style="margin-top:12px;font-weight:800;color:#16a34a;">✅ تم إنشاء الواجب! انسخ الرابط وأرسله للطلاب:</p>
+        <div class="hw-link-row">
+          <input type="text" id="hw-link-input" readonly>
+          <button class="mini-btn" id="hw-copy-btn">نسخ</button>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-weight:800;margin:20px 0 10px;">📋 الواجبات السابقة</p>
+    <div id="hw-list"><p style="text-align:center;">⏳ جاري التحميل...</p></div>
+  `;
+  document.getElementById("hw-create-btn").onclick = () => {
+    const stageId = parseInt(document.getElementById("hw-stage-select").value);
+    const stage = ASAS_STAGES.find((s) => s.id === stageId);
+    if (!stage) return;
+    Fakker.Homework.create(stage.id, stage.title, (hwId) => {
+      if (!hwId) { alert("تعذّر إنشاء الواجب، تأكد من الاتصال بالإنترنت"); return; }
+      const link = location.origin + location.pathname.replace("teacher.html", "index.html") + "?hw=" + hwId;
+      const box = document.getElementById("hw-created-box");
+      box.hidden = false;
+      document.getElementById("hw-link-input").value = link;
+      renderHomeworkList();
+    });
+  };
+  document.getElementById("hw-copy-btn").onclick = () => {
+    const input = document.getElementById("hw-link-input");
+    input.select();
+    navigator.clipboard && navigator.clipboard.writeText(input.value).catch(() => {});
+    const btn = document.getElementById("hw-copy-btn");
+    btn.textContent = "تم! ✅";
+    setTimeout(() => { btn.textContent = "نسخ"; }, 1500);
+  };
+  renderHomeworkList();
+}
+
+function renderHomeworkList() {
+  const list = document.getElementById("hw-list");
+  if (!list) return;
+  Fakker.Homework.fetchAll((homeworks) => {
+    if (!homeworks.length) { list.innerHTML = `<p style="text-align:center;">ما أنشأت أي واجب بعد.</p>`; return; }
+    list.innerHTML = "";
+    homeworks.forEach((hw) => {
+      const completions = hw.completions ? Object.values(hw.completions) : [];
+      completions.sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+      const date = hw.createdAt ? new Date(hw.createdAt).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "";
+      const card = document.createElement("div");
+      card.className = "hw-card";
+      card.innerHTML = `
+        <div class="head">
+          <span class="title">${hw.stageTitle || "مرحلة"}</span>
+          <span class="date">${date}</span>
+          <span class="count">${completions.length} أنجزوا</span>
+        </div>
+        <div class="hw-students">
+          ${completions.length ? completions.map((c) => `
+            <div class="hw-student-row">
+              <span>${c.avatar || "🧒"}</span><span style="flex:1;">${c.name || "طالب"}</span>
+              <span class="stars">${"★".repeat(c.stars || 0)}</span>
+              <span style="font-size:11px;color:var(--text-soft);">${c.completedAt ? new Date(c.completedAt).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+            </div>`).join("") : '<p style="text-align:center;color:var(--text-soft);">ولا طالب حل الواجب لسه.</p>'}
+        </div>
+      `;
+      card.querySelector(".head").onclick = () => card.querySelector(".hw-students").classList.toggle("open");
+      list.appendChild(card);
+    });
+  });
 }
 
 // ---------- إجابات الطلاب (قِطع القراءة) ----------

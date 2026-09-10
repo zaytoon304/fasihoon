@@ -199,6 +199,9 @@
   });
   document.getElementById("back-to-home").onclick = goHome;
 
+  // رابط واجب من المعلم (?hw=...) — يوصل الطالب مباشرة لمرحلة أساس القراءة المحددة بعد كتابة اسمه
+  const hwId = new URLSearchParams(location.search).get("hw");
+
   document.getElementById("start-btn").onclick = () => {
     const name = document.getElementById("name-input").value.trim();
     if (!name) {
@@ -206,7 +209,9 @@
       document.getElementById("name-input").style.borderColor = "#ef4444";
       return;
     }
-    const profile = Fakker.Profile.create(name, selectedAvatar);
+    Fakker.Profile.create(name, selectedAvatar);
+    if (hwId) { location.href = "games/asas.html?hw=" + encodeURIComponent(hwId); return; }
+    const profile = Fakker.Profile.get();
     showStudentBadge(profile);
     goHome();
   };
@@ -215,7 +220,8 @@
   Fakker.mountSettingsToggle();
   renderAvatarGrid();
   const existing = Fakker.Profile.get();
-  if (existing) { showStudentBadge(existing); goHome(); }
+  if (hwId && existing) { location.href = "games/asas.html?hw=" + encodeURIComponent(hwId); }
+  else if (existing) { showStudentBadge(existing); goHome(); }
   else { document.getElementById("welcome-screen").hidden = false; }
 </script>
 </body>

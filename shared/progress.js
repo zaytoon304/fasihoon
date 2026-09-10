@@ -119,6 +119,46 @@ Fakker.Answers = {
   },
 };
 
+// واجبات إلكترونية: المعلم يختار مرحلة من أساس القراءة ويحصل على رابط، والطالب يدخل الرابط ويكتب اسمه ويحل
+// — وبكذا المعلم يتأكد فعلياً إن الطالب دخل وحل، لأن الإنجاز يُسجَّل على Firebase بمعرّف الواجب
+Fakker.Homework = {
+  create(stageId, stageTitle, callback) {
+    if (!Fakker.Progress.db) { callback(null); return; }
+    const hwId = "h" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    Fakker.Progress.db.ref("homeworks/" + hwId).set({
+      stageId, stageTitle, createdAt: Date.now(),
+    }).then(() => callback(hwId))
+      .catch((e) => { console.warn("فصحون: تعذّر إنشاء الواجب", e); callback(null); });
+  },
+  recordCompletion(hwId, extra) {
+    const profile = Fakker.Profile.get();
+    if (!Fakker.Progress.db || !profile || !hwId) return;
+    Fakker.Progress.db.ref(`homeworks/${hwId}/completions/${profile.id}`).set(Object.assign({
+      name: profile.name,
+      avatar: profile.avatar,
+      completedAt: Date.now(),
+    }, extra || {})).catch((e) => console.warn("فصحون: تعذّر تسجيل إنجاز الواجب", e));
+  },
+  fetchOne(hwId, callback) {
+    if (!Fakker.Progress.db || !hwId) { callback(null); return; }
+    Fakker.Progress.db.ref("homeworks/" + hwId).once("value")
+      .then((snap) => callback(snap.val()))
+      .catch((e) => { console.warn("فصحون: تعذّر جلب الواجب", e); callback(null); });
+  },
+  // لوحة المعلم: كل الواجبات اللي أنشأها، الأحدث أولاً
+  fetchAll(callback) {
+    if (!Fakker.Progress.db) { callback([]); return; }
+    Fakker.Progress.db.ref("homeworks").once("value")
+      .then((snap) => {
+        const val = snap.val() || {};
+        const list = Object.keys(val).map((id) => Object.assign({ id }, val[id]));
+        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        callback(list);
+      })
+      .catch((e) => { console.warn("فصحون: تعذّر جلب الواجبات", e); callback([]); });
+  },
+};
+
 // إحصائيات الاستخدام: كم مرة لُعبت كل نشاط
 Fakker.Analytics = {
   KEY: "fasihoon_analytics_plays",

@@ -77,6 +77,10 @@
   .mode-pills { display: flex; justify-content: center; gap: 10px; margin: 10px 0 4px; }
   .mode-pill { padding: 8px 16px; border-radius: 999px; font-weight: 800; font-size: 13px; background: var(--accent-soft); color: var(--accent); cursor: pointer; }
   .mode-pill.active { background: var(--asas-gold); color: #fff; }
+  .hw-banner {
+    max-width: 460px; margin: 0 auto 10px; text-align: center; background: linear-gradient(135deg,var(--accent),#5b21b6);
+    color: #fff; font-weight: 800; font-size: 13px; padding: 10px 16px; border-radius: 999px;
+  }
 
   .big-card {
     max-width: 460px; margin: 18px auto; text-align: center; padding: 40px 22px;
@@ -234,6 +238,7 @@
   <!-- شاشة المرحلة -->
   <section id="stage-screen" hidden>
     <div class="back-row" id="back-to-map">→ رجوع للمراحل</div>
+    <div id="hw-banner" class="hw-banner" hidden>📮 هذا واجب من معلمك</div>
     <div class="mode-pills" id="mode-pills">
       <div class="mode-pill" id="pill-learn">🎧 تعلّم</div>
       <div class="mode-pill" id="pill-practice">✏️ تدرّب</div>
@@ -384,10 +389,17 @@
 <script src="../shared/asas-data-phase7.js"></script>
 <script>
 const GAME_ID = "asas";
+const currentHwId = new URLSearchParams(location.search).get("hw");
 const profile = Fakker.Profile.get();
-if (!profile) location.href = "../index.html";
+if (!profile) location.href = "../index.html" + (currentHwId ? "?hw=" + encodeURIComponent(currentHwId) : "");
 
 Fakker.mountSettingsToggle();
+
+// تقرير إنجاز الواجب (لو دخل الطالب من رابط واجب) — يُنادى من كل نقاط إنهاء المرحلة
+function hwReportCompletion(stars, score) {
+  if (!currentHwId || !curStage) return;
+  Fakker.Homework.recordCompletion(currentHwId, { stageId: curStage.id, stageTitle: curStage.title, stars: stars || 0, score: score || 0 });
+}
 function refreshWallet() { document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance; }
 refreshWallet();
 
@@ -601,6 +613,7 @@ function endSentenceOrder() {
   const ratio = soSession.firstTryCorrect / soSession.queue.length;
   const stars = ratio >= 0.85 ? 3 : ratio >= 0.6 ? 2 : 1;
   Fakker.Progress.record("asas", curStage.id, { stars, score: soSession.firstTryCorrect });
+  hwReportCompletion(stars, soSession.firstTryCorrect);
   Fakker.Analytics.logPlay("asas");
   Fakker.Economy.awardCompletion("أساس القراءة");
   refreshWallet();
@@ -699,6 +712,7 @@ function endStoryOrder() {
   const ratio = stoSession.firstTryCorrect / stoSession.queue.length;
   const stars = ratio >= 0.85 ? 3 : ratio >= 0.6 ? 2 : 1;
   Fakker.Progress.record("asas", curStage.id, { stars, score: stoSession.firstTryCorrect });
+  hwReportCompletion(stars, stoSession.firstTryCorrect);
   Fakker.Analytics.logPlay("asas");
   Fakker.Economy.awardCompletion("أساس القراءة");
   refreshWallet();
@@ -853,6 +867,7 @@ function endPractice() {
   window.speechSynthesis && window.speechSynthesis.cancel();
   const stars = computeStars();
   Fakker.Progress.record(GAME_ID, curStage.id, { stars, score: session.correctFirstTry });
+  hwReportCompletion(stars, session.correctFirstTry);
   Fakker.Analytics.logPlay(GAME_ID);
   Fakker.Economy.awardCompletion("أساس القراءة");
   refreshWallet();
@@ -1050,6 +1065,7 @@ document.getElementById("pg-next").onclick = () => {
 function endPassages() {
   window.speechSynthesis && window.speechSynthesis.cancel();
   Fakker.Progress.record("asas", curStage.id, { stars: 3, score: curStage.items.length });
+  hwReportCompletion(3, curStage.items.length);
   Fakker.Analytics.logPlay("asas");
   Fakker.Economy.awardCompletion("أساس القراءة");
   refreshWallet();
@@ -1077,8 +1093,26 @@ if (_urlParams.get("unlock") === "all") {
   setMascot("فُتحت كل المراحل ✅ — هذا الرابط للمعلم بس، لا تشاركه بالطلاب");
 }
 
-// بدء التشغيل
-renderMap();
+// بدء التشغيل — لو دخل الطالب من رابط واجب (?hw=...) افتح له مرحلته مباشرة بدون المرور بالخريطة
+if (currentHwId) {
+  renderMap();
+  Fakker.Homework.fetchOne(currentHwId, (hw) => {
+    const stage = hw && hw.stageId != null ? ASAS_STAGES.find((s) => s.id === hw.stageId) : null;
+    if (stage) {
+      openStage(stage);
+      const banner = document.getElementById("hw-banner");
+      banner.hidden = false;
+      banner.textContent = "📮 واجبك من معلمك: " + stage.title;
+      setMascot("هذا واجبك من معلمك: «" + stage.title + "» — بالتوفيق! 🌱");
+    } else if (!Fakker.Progress.db) {
+      setMascot("⚠️ تعذّر تحميل الواجب — افتح مرحلتك من الخريطة تحت، أو اطلب من معلمك رابط جديد");
+    } else {
+      setMascot("⚠️ ما لقيت هذا الواجب (ممكن الرابط قديم) — افتح مرحلتك من الخريطة تحت");
+    }
+  });
+} else {
+  renderMap();
+}
 </script>
 </body>
 </html>
