@@ -178,6 +178,15 @@
   .comp-row { padding: 10px 0; border-bottom: 1px solid var(--accent-soft); }
   .comp-row:last-child { border-bottom: none; }
   .comp-row .comp-top { display: flex; align-items: center; gap: 10px; }
+  .comp-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .comp-choice {
+    background: var(--card-bg); box-shadow: 0 2px 8px var(--shadow); border-radius: 10px;
+    padding: 10px 12px; font-size: 13px; text-align: center; transition: transform .1s ease;
+  }
+  .comp-choice:active { transform: scale(0.96); }
+  .comp-choice.correct { background: #bbf7d0; color: #15803d; font-weight: 800; }
+  .comp-choice.wrong { background: #fecaca; color: #b91c1c; }
+  .comp-choice[disabled], .comp-choice.locked { pointer-events: none; }
   .comp-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .comp-text { flex: 1; font-size: 15px; }
   .answer-box {
@@ -311,7 +320,7 @@
         </div>
 
         <div id="pg-comp-section" hidden>
-          <div class="section-label">❓ أسئلة الفهم — اكتب إجابتك أو ناقشها بصوت عالٍ</div>
+          <div class="section-label">❓ أسئلة الفهم — اختر الإجابة الصحيحة</div>
           <div id="pg-comp-list"></div>
         </div>
 
@@ -868,6 +877,31 @@ function startPassages() {
 function pgAnswerKey(field) {
   return "fk_asas_answer_" + curStage.id + "_" + pgSession.index + "_" + field;
 }
+// يبني 4 خيارات لسؤال فهم: الإجابة الصحيحة + 3 مسحوبة عشوائياً من باقي إجابات نفس المرحلة
+function pgMCQChoices(passage, qIndex) {
+  const correct = passage.answers[qIndex];
+  const pool = [];
+  curStage.items.forEach((item) => {
+    if (item.answers) item.answers.forEach((a) => { if (a && a !== correct && !pool.includes(a)) pool.push(a); });
+  });
+  const distractors = shuffleAsas(pool).slice(0, 3);
+  return shuffleAsas([correct, ...distractors]);
+}
+
+function pgAnswerMCQ(row, choicesWrap, choice, correctAnswer, qIndex) {
+  const isCorrect = choice === correctAnswer;
+  Array.from(choicesWrap.children).forEach((b) => {
+    b.classList.add("locked");
+    if (b.textContent === correctAnswer) b.classList.add("correct");
+    else if (b.textContent === choice && !isCorrect) b.classList.add("wrong");
+  });
+  if (isCorrect) Fakker.FX.success(); else Fakker.FX.wrong();
+  try { localStorage.setItem(pgAnswerKey("q" + qIndex), JSON.stringify({ selected: choice, correct: isCorrect })); } catch (e) {}
+  if (Fakker.Answers) {
+    Fakker.Answers.save(curStage.id, pgSession.index, "q" + qIndex, `${isCorrect ? "✅ صحيح" : "❌ خطأ"} — اختار: ${choice}`);
+  }
+}
+
 function pgBindAnswer(el, field) {
   const key = pgAnswerKey(field);
   try { el.value = localStorage.getItem(key) || ""; } catch (e) {}
@@ -917,12 +951,41 @@ function renderPassage() {
     questions.forEach((q, i) => {
       const row = document.createElement("div");
       row.className = "comp-row";
-      row.innerHTML = `
-        <div class="comp-top"><span class="comp-num">${i + 1}</span><span class="comp-text">${q}</span><span class="mini-btn">🔊</span></div>
-        <textarea class="answer-box mini-answer" placeholder="اكتب إجابتك هنا..." rows="1"></textarea>
-      `;
+      const correctAnswer = p.answers && p.answers[i];
+      row.innerHTML = `<div class="comp-top"><span class="comp-num">${i + 1}</span><span class="comp-text">${q}</span><span class="mini-btn">🔊</span></div>`;
       row.querySelector(".mini-btn").onclick = () => speak(q);
-      pgBindAnswer(row.querySelector("textarea"), "q" + i);
+      if (correctAnswer) {
+        const choicesWrap = document.createElement("div");
+        choicesWrap.className = "comp-choices";
+        const choices = pgMCQChoices(p, i);
+        choices.forEach((choice) => {
+          const btn = document.createElement("div");
+          btn.className = "comp-choice";
+          btn.textContent = choice;
+          btn.onclick = () => pgAnswerMCQ(row, choicesWrap, choice, correctAnswer, i);
+          choicesWrap.appendChild(btn);
+        });
+        row.appendChild(choicesWrap);
+        // استرجاع الاختيار المحفوظ سابقاً (لو رجع الطالب لنفس المقطع)
+        const savedKey = pgAnswerKey("q" + i);
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(savedKey) || "null"); } catch (e) {}
+        if (saved && saved.selected) {
+          Array.from(choicesWrap.children).forEach((b) => {
+            b.classList.add("locked");
+            if (b.textContent === correctAnswer) b.classList.add("correct");
+            else if (b.textContent === saved.selected) b.classList.add("wrong");
+          });
+        }
+      } else {
+        // ما فيه إجابة محفوظة لهذا السؤال (بيانات قديمة) — يرجع لوضع الكتابة الحر
+        const ta = document.createElement("textarea");
+        ta.className = "answer-box mini-answer";
+        ta.placeholder = "اكتب إجابتك هنا...";
+        ta.rows = 1;
+        row.appendChild(ta);
+        pgBindAnswer(ta, "q" + i);
+      }
       list.appendChild(row);
     });
   } else compSection.hidden = true;
