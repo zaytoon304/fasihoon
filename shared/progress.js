@@ -11,6 +11,7 @@ const FAKKER_LEVELS = [
 const FAKKER_GAMES = [
   { id: "fasihoon", name: "فصحون", emoji: "📖", file: "games/fasihoon.html", desc: "مع الأستاذ فصيح: حروف وكلمات وجُمل وقدرات لغوية" },
   { id: "asas", name: "أساس القراءة", emoji: "🌱", file: "games/asas.html", desc: "تعلّم القراءة من الصفر، خطوة خطوة وبدون عجلة" },
+  { id: "thinking", name: "مهارات التفكير", emoji: "🧩", file: "games/thinking.html", desc: "قصص وأسئلة تقيس ٧ مهارات تفكير، مع بطاقة نتيجة وتحسين بعد كل قصة" },
 ];
 
 const Fakker = {};
@@ -47,7 +48,8 @@ Fakker.Progress = {
     localStorage.setItem(this.KEY, JSON.stringify(all));
     const profile = Fakker.Profile.get();
     if (this.db && profile) {
-      this.db.ref("students/" + profile.id).set({
+      // .update() لا .set() — عشان ما يمسح فروع ثانية محفوظة تحت نفس الطالب (زي answers/ من Fakker.Answers)
+      this.db.ref("students/" + profile.id).update({
         name: profile.name,
         avatar: profile.avatar,
         updatedAt: Date.now(),
@@ -122,11 +124,11 @@ Fakker.Answers = {
 // واجبات إلكترونية: المعلم يختار مرحلة من أساس القراءة ويحصل على رابط، والطالب يدخل الرابط ويكتب اسمه ويحل
 // — وبكذا المعلم يتأكد فعلياً إن الطالب دخل وحل، لأن الإنجاز يُسجَّل على Firebase بمعرّف الواجب
 Fakker.Homework = {
-  create(stageId, stageTitle, callback) {
+  create(gameId, stageId, stageTitle, callback) {
     if (!Fakker.Progress.db) { callback(null); return; }
     const hwId = "h" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     Fakker.Progress.db.ref("homeworks/" + hwId).set({
-      stageId, stageTitle, createdAt: Date.now(),
+      gameId: gameId || "asas", stageId, stageTitle, createdAt: Date.now(),
     }).then(() => callback(hwId))
       .catch((e) => { console.warn("فصحون: تعذّر إنشاء الواجب", e); callback(null); });
   },

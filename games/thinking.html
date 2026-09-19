@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مهارات التفكير — فصحون</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+  :root { --think-1: #7c3aed; --think-1-light: #c4b5fd; --think-ink: #2c1c4a; --think-cream: #f5f1fc; --think-cream-deep: #e6dbfa; }
+  @media (prefers-color-scheme: dark) {
+    :root { --think-cream: #1c1530; --think-cream-deep: #261c40; --think-ink: #e6dbfa; }
+  }
+  body { background: var(--bg); }
+  [hidden] { display: none !important; }
+
+  .think-band {
+    background: linear-gradient(135deg, var(--think-cream) 0%, var(--think-cream-deep) 100%);
+    border-top: 3px solid var(--think-1); border-bottom: 3px solid var(--think-1);
+    padding: 26px 16px 22px; text-align: center;
+  }
+  .think-band .theme-emoji {
+    font-size: 40px; width: 78px; height: 78px; margin: 0 auto 6px;
+    background: radial-gradient(circle at 35% 30%, var(--think-1-light), var(--think-1));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(124,58,237,.4);
+  }
+  .think-band h1 { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 28px; color: var(--think-ink); }
+  .think-band p { margin-top: 4px; color: var(--think-ink); opacity: .8; font-weight: 700; font-size: 14px; }
+
+  .back-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; cursor: pointer; color: var(--think-1); font-weight: 800; width: fit-content; }
+  .hw-banner {
+    max-width: 460px; margin: 0 auto 10px; text-align: center; background: linear-gradient(135deg,var(--think-1),#5b21b6);
+    color: #fff; font-weight: 800; font-size: 13px; padding: 10px 16px; border-radius: 999px;
+  }
+  .section-label { font-weight: 800; font-size: 14px; color: var(--think-1); margin: 18px 0 8px; }
+  .mistake-item { background: var(--bg); border: 2px solid #fecaca; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; }
+  .mistake-item .mq { font-weight: 800; margin-bottom: 6px; }
+  .mistake-item .my-answer { color: #b91c1c; }
+  .mistake-item .correct-answer { color: #15803d; }
+
+  .summary-btn {
+    display: block; width: fit-content; margin: 14px auto 0; background: linear-gradient(135deg, var(--think-1), #5b21b6);
+    color: #fff; padding: 10px 20px; border-radius: 999px; font-weight: 800; font-size: 14px; box-shadow: 0 6px 14px rgba(124,58,237,.35);
+  }
+  .summary-btn:active { transform: scale(0.97); }
+
+  .stage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 14px; margin-top: 20px; }
+  .stage-card {
+    border-radius: var(--radius-lg); padding: 20px 14px; text-align: center; color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08), 0 16px 26px var(--shadow);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: linear-gradient(155deg, var(--think-1-light), var(--think-1));
+    transition: transform .15s ease;
+  }
+  .stage-card:active { transform: scale(0.97); }
+  .stage-card .num { font-size: 12px; font-weight: 800; opacity: .85; }
+  .stage-card .ic { font-size: 30px; }
+  .stage-card h3 { font-size: 15px; }
+  .stage-card .st { font-size: 14px; letter-spacing: 2px; color: #3a2405; background: rgba(255,255,255,.5); border-radius: 999px; padding: 2px 10px; margin-top: 2px; }
+
+  .passage-card { max-width: 640px; margin: 14px auto; padding: 26px 24px; }
+  .passage-title { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 22px; text-align: center; color: var(--think-1); margin-bottom: 4px; }
+  .passage-counter { text-align: center; font-size: 13px; opacity: .7; margin-bottom: 14px; }
+  .passage-story { font-family: 'Amiri','Tajawal',serif; font-size: 21px; line-height: 2.1; text-align: justify; white-space: pre-line; }
+  .listen-btn {
+    margin: 10px auto 0; display: inline-flex; align-items: center; gap: 8px;
+    background: var(--think-1); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-weight: 800; font-size: 15px; box-shadow: 0 6px 14px rgba(124,58,237,.35);
+  }
+  .listen-btn:active { transform: scale(0.96); }
+  .listen-btn.secondary { background: linear-gradient(135deg,var(--accent),#5b21b6); }
+  .listen-btn[disabled] { opacity: .4; pointer-events: none; }
+
+  .skill-section { max-width: 640px; margin: 18px auto 0; }
+  .skill-head { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 15px; color: var(--think-1); margin-bottom: 8px; }
+  .comp-row { padding: 10px 0; border-bottom: 1px solid var(--accent-soft); }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-row .comp-top { display: flex; align-items: center; gap: 10px; }
+  .comp-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .comp-text { flex: 1; font-size: 15px; }
+  .mini-btn { flex-shrink: 0; font-size: 16px; padding: 4px 8px; border-radius: 8px; background: var(--accent-soft); cursor: pointer; }
+  .comp-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .comp-choice {
+    background: var(--card-bg); box-shadow: 0 2px 8px var(--shadow); border-radius: 10px;
+    padding: 10px 12px; font-size: 13px; text-align: center; transition: transform .1s ease;
+  }
+  .comp-choice:active { transform: scale(0.96); }
+  .comp-choice.correct { background: #bbf7d0; color: #15803d; font-weight: 800; }
+  .comp-choice.wrong { background: #fecaca; color: #b91c1c; }
+  .comp-choice.locked { pointer-events: none; }
+
+  .think-actions { max-width: 640px; margin: 20px auto 0; text-align: center; }
+  .progress-note { text-align: center; font-size: 13px; opacity: .7; margin-top: 8px; }
+
+  /* ---------- بطاقة النتيجة ---------- */
+  .report-card { max-width: 640px; margin: 14px auto; padding: 26px 22px; }
+  .report-title { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 22px; text-align: center; color: var(--think-1); }
+  .report-stars { text-align: center; font-size: 34px; letter-spacing: 6px; color: #d4a017; margin: 8px 0 4px; }
+  .report-desc { text-align: center; font-size: 14px; opacity: .8; margin-bottom: 16px; }
+  .skill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--accent-soft); }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-icon { font-size: 22px; width: 34px; text-align: center; flex-shrink: 0; }
+  .skill-info { flex: 1; min-width: 0; }
+  .skill-name-row { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .skill-score { font-size: 13px; opacity: .8; }
+  .skill-bar-track { background: var(--accent-soft); border-radius: 999px; height: 9px; overflow: hidden; }
+  .skill-bar-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+  .skill-bar-fill.strong { background: #22c55e; }
+  .skill-bar-fill.mid { background: #f59e0b; }
+  .skill-bar-fill.weak { background: #ef4444; }
+  .skill-tip { font-size: 12px; margin-top: 5px; color: var(--text); opacity: .8; line-height: 1.6; }
+
+  #win-overlay { position: fixed; inset: 0; background: rgba(20,14,40,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 16px; overflow-y: auto; }
+  #win-overlay .card { max-width: 460px; text-align: center; animation: pop-in .4s ease; margin: auto; }
+  .ghost-btn { background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-md); padding: 14px; font-weight: 800; }
+  .win-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .win-actions button, .win-actions div { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="logo-emoji">🧩</span> فصحون</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="pill" id="wallet-pill">🪙 0</span>
+    <a href="fasihoon.html" class="pill">📖 فصحون</a>
+    <a href="../index.html" class="pill">🏠 الرئيسية</a>
+  </div>
+</div>
+
+<div class="think-band">
+  <div class="theme-emoji">🧩</div>
+  <h1>مهارات التفكير</h1>
+  <p>اقرأ القصة، جاوب على الأسئلة، وشوف بطاقة مهاراتك بعد كل قصة</p>
+</div>
+
+<div class="container">
+
+  <!-- خريطة القصص -->
+  <section id="map-screen">
+    <div class="stage-grid" id="stage-grid"></div>
+    <div class="summary-btn" id="summary-btn">📊 ملخص مهاراتي الكلي</div>
+  </section>
+
+  <!-- شاشة القصة والأسئلة -->
+  <section id="stage-screen" hidden>
+    <div class="back-row" id="back-to-map">→ رجوع للقصص</div>
+    <div id="hw-banner" class="hw-banner" hidden>📮 هذا واجب من معلمك</div>
+    <div class="passage-counter" id="pg-counter"></div>
+    <div class="card passage-card">
+      <div class="passage-title" id="pg-title"></div>
+      <div style="text-align:center;">
+        <div class="listen-btn" id="pg-listen-story">🔊 اسمع القصة</div>
+      </div>
+      <div class="passage-story" id="pg-story" style="margin-top:14px;"></div>
+    </div>
+    <div id="skill-sections"></div>
+    <div class="think-actions">
+      <div class="listen-btn secondary" id="pg-finish">🏁 أنهيت، اعرض بطاقة مهاراتي</div>
+      <div class="progress-note" id="pg-progress-note"></div>
+    </div>
+  </section>
+
+  <!-- بطاقة النتيجة -->
+  <section id="report-screen" hidden>
+    <div class="back-row" id="back-to-map-2">→ رجوع للقصص</div>
+    <div class="card report-card">
+      <div class="report-title" id="report-title"></div>
+      <div class="report-stars" id="report-stars"></div>
+      <div class="report-desc" id="report-desc"></div>
+      <div id="skill-rows"></div>
+      <div id="mistakes-section" hidden>
+        <div class="section-label" style="margin-top:20px;">🧐 راجع أخطاءك</div>
+        <div id="mistakes-list"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="win-overlay" hidden>
+  <div class="card">
+    <h2 id="win-title">أحسنت!</h2>
+    <div id="win-body"></div>
+    <div class="win-actions">
+      <div class="ghost-btn" id="win-map">القصص ↺</div>
+      <button class="big-btn" id="win-report">بطاقة مهاراتي 🧩</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../shared/firebase-config.js"></script>
+<script src="../shared/progress.js"></script>
+<script src="../shared/economy-config.js"></script>
+<script src="../shared/economy.js"></script>
+<script src="../shared/thinking-data.js"></script>
+<script>
+const GAME_ID = "thinking";
+const currentHwId = new URLSearchParams(location.search).get("hw");
+const _profile = Fakker.Profile.get();
+if (!_profile) location.href = "../index.html" + (currentHwId ? "?hw=" + encodeURIComponent(currentHwId) : "");
+
+function refreshWallet() { document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance; }
+refreshWallet();
+
+function hwReportCompletion(stars, score, scores) {
+  if (!currentHwId || curIndex == null) return;
+  Fakker.Homework.recordCompletion(currentHwId, {
+    stageId: curIndex + 1, stageTitle: THINKING_PASSAGES[curIndex].title,
+    stars: stars || 0, score: score || 0, skillScores: scores || null,
+  });
+}
+
+// ---------------- نطق عربي ----------------
+let arabicVoice = null;
+function pickArabicVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  arabicVoice = voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("ar")) || null;
+}
+if (window.speechSynthesis) { pickArabicVoice(); window.speechSynthesis.onvoiceschanged = pickArabicVoice; }
+function speak(text) {
+  if (!Fakker.Settings.get().sound || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ar-SA"; u.rate = 0.85;
+  if (arabicVoice) u.voice = arabicVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// ---------------- خريطة القصص ----------------
+function stageStars(i) { return Fakker.Progress.get(GAME_ID, i + 1).bestStars; }
+
+function renderMap() {
+  const grid = document.getElementById("stage-grid");
+  grid.innerHTML = "";
+  THINKING_PASSAGES.forEach((p, i) => {
+    const stars = stageStars(i);
+    const el = document.createElement("div");
+    el.className = "stage-card";
+    el.innerHTML = `
+      <div class="num">قصة ${i + 1}</div>
+      <div class="ic">🧩</div>
+      <h3>${p.title}</h3>
+      <div class="st">${"★".repeat(stars) + "☆".repeat(3 - stars)}</div>
+    `;
+    el.onclick = () => openStage(i);
+    grid.appendChild(el);
+  });
+}
+
+function backToMap() {
+  document.getElementById("stage-screen").hidden = true;
+  document.getElementById("report-screen").hidden = true;
+  document.getElementById("map-screen").hidden = false;
+  renderMap();
+}
+document.getElementById("back-to-map").onclick = backToMap;
+document.getElementById("back-to-map-2").onclick = backToMap;
+document.getElementById("win-map").onclick = () => { document.getElementById("win-overlay").hidden = true; backToMap(); };
+
+// ---------------- حالة القصة الحالية ----------------
+let curIndex = null;
+let curAnswers = {}; // qIndex -> { selected, correct }
+
+function answerKey(field) { return "fk_thinking_answer_" + curIndex + "_" + field; }
+
+function openStage(i) {
+  curIndex = i;
+  curAnswers = {};
+  document.getElementById("map-screen").hidden = true;
+  document.getElementById("report-screen").hidden = true;
+  document.getElementById("stage-screen").hidden = false;
+  renderStage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderStage() {
+  const p = THINKING_PASSAGES[curIndex];
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  document.getElementById("pg-counter").textContent = `القصة ${curIndex + 1} من ${THINKING_PASSAGES.length}`;
+  document.getElementById("pg-title").textContent = p.title;
+  document.getElementById("pg-story").textContent = p.story;
+  document.getElementById("pg-listen-story").onclick = () => speak(p.story);
+
+  const wrap = document.getElementById("skill-sections");
+  wrap.innerHTML = "";
+  THINKING_SKILLS.forEach((skill) => {
+    const qs = p.questions.map((q, idx) => ({ q, idx })).filter((x) => x.q.skill === skill.id);
+    if (!qs.length) return;
+    const sec = document.createElement("div");
+    sec.className = "skill-section";
+    sec.innerHTML = `<div class="skill-head">${skill.icon} ${skill.name}</div>`;
+    qs.forEach(({ q, idx }) => {
+      const row = document.createElement("div");
+      row.className = "comp-row";
+      row.innerHTML = `<div class="comp-top"><span class="comp-num">${idx + 1}</span><span class="comp-text">${q.q}</span><span class="mini-btn">🔊</span></div>`;
+      row.querySelector(".mini-btn").onclick = () => speak(q.q);
+      const choicesWrap = document.createElement("div");
+      choicesWrap.className = "comp-choices";
+      q.choices.forEach((choice, ci) => {
+        const btn = document.createElement("div");
+        btn.className = "comp-choice";
+        btn.textContent = choice;
+        btn.onclick = () => answerQuestion(idx, ci, choicesWrap);
+        choicesWrap.appendChild(btn);
+      });
+      row.appendChild(choicesWrap);
+      // استرجاع إجابة محفوظة سابقاً لو رجع الطالب لنفس القصة
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(answerKey("q" + idx)) || "null"); } catch (e) {}
+      if (saved) {
+        curAnswers[idx] = saved;
+        Array.from(choicesWrap.children).forEach((b, ci) => {
+          b.classList.add("locked");
+          if (ci === q.correct) b.classList.add("correct");
+          else if (ci === saved.selected && !saved.isCorrect) b.classList.add("wrong");
+        });
+      }
+      sec.appendChild(row);
+    });
+    wrap.appendChild(sec);
+  });
+  updateProgressNote();
+}
+
+function answerQuestion(qIdx, choiceIdx, choicesWrap) {
+  if (curAnswers[qIdx]) return; // مجاوَب عليه سابقاً
+  const p = THINKING_PASSAGES[curIndex];
+  const q = p.questions[qIdx];
+  const isCorrect = choiceIdx === q.correct;
+  Array.from(choicesWrap.children).forEach((b, ci) => {
+    b.classList.add("locked");
+    if (ci === q.correct) b.classList.add("correct");
+    else if (ci === choiceIdx && !isCorrect) b.classList.add("wrong");
+  });
+  if (isCorrect) { Fakker.FX.success(); Fakker.Economy.awardCorrect(1); refreshWallet(); }
+  else Fakker.FX.wrong();
+  curAnswers[qIdx] = { selected: choiceIdx, isCorrect };
+  try { localStorage.setItem(answerKey("q" + qIdx), JSON.stringify(curAnswers[qIdx])); } catch (e) {}
+  // يحفظ إجابة كل سؤال على Firebase (لو مفعّل) عشان المعلم يشوف حلول كل طالب بلوحة المعلم
+  if (Fakker.Answers) {
+    const selectedText = q.choices[choiceIdx];
+    Fakker.Answers.save("t" + (curIndex + 1), 0, "q" + qIdx, (isCorrect ? "✅ صحيح — اختار: " : "❌ خطأ — اختار: ") + selectedText);
+  }
+  updateProgressNote();
+}
+
+function updateProgressNote() {
+  const total = THINKING_PASSAGES[curIndex].questions.length;
+  const answered = Object.keys(curAnswers).length;
+  document.getElementById("pg-progress-note").textContent = `جاوبت على ${answered} من ${total} سؤال`;
+  document.getElementById("pg-finish").style.opacity = answered >= total ? "1" : ".55";
+}
+
+document.getElementById("pg-finish").onclick = () => {
+  const total = THINKING_PASSAGES[curIndex].questions.length;
+  if (Object.keys(curAnswers).length < total) {
+    Fakker.FX.wrong();
+    document.getElementById("pg-progress-note").textContent = "جاوب على كل الأسئلة الأول عشان نطلع لك بطاقة مهاراتك 🙂";
+    return;
+  }
+  finishStage();
+};
+
+// ---------------- حساب المهارات وحفظ التقدم ----------------
+function computeSkillScores() {
+  const p = THINKING_PASSAGES[curIndex];
+  const scores = {}; // skillId -> {correct, total}
+  THINKING_SKILLS.forEach((s) => { scores[s.id] = { correct: 0, total: 0 }; });
+  p.questions.forEach((q, idx) => {
+    scores[q.skill].total++;
+    if (curAnswers[idx] && curAnswers[idx].isCorrect) scores[q.skill].correct++;
+  });
+  return scores;
+}
+
+function bandFor(ratio) { return ratio >= 0.8 ? "strong" : ratio >= 0.5 ? "mid" : "weak"; }
+
+function saveCumulativeSkills(scores) {
+  const KEY = "fasihoon_thinking_skills_totals";
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  THINKING_SKILLS.forEach((s) => {
+    const prev = all[s.id] || { correct: 0, total: 0 };
+    all[s.id] = { correct: prev.correct + scores[s.id].correct, total: prev.total + scores[s.id].total };
+  });
+  localStorage.setItem(KEY, JSON.stringify(all));
+}
+
+function finishStage() {
+  const p = THINKING_PASSAGES[curIndex];
+  const scores = computeSkillScores();
+  const totalCorrect = Object.values(scores).reduce((a, s) => a + s.correct, 0);
+  const totalQ = p.questions.length;
+  const ratio = totalCorrect / totalQ;
+  const stars = ratio >= 0.85 ? 3 : ratio >= 0.6 ? 2 : 1;
+
+  Fakker.Progress.record(GAME_ID, curIndex + 1, { stars, score: totalCorrect });
+  Fakker.Analytics.logPlay(GAME_ID);
+  Fakker.Economy.awardCompletion("مهارات التفكير");
+  refreshWallet();
+  saveCumulativeSkills(scores);
+  hwReportCompletion(stars, totalCorrect, scores);
+
+  renderReport(p, stars, totalCorrect, totalQ, scores);
+
+  Fakker.FX.confetti();
+  Fakker.FX.win();
+  document.getElementById("win-title").textContent = stars === 3 ? "أحسنت! أداء رائع 🧩✨" : Fakker.FX.randomPraise();
+  document.getElementById("win-body").innerHTML = `
+    <div class="report-stars" style="margin:6px 0;">${"★".repeat(stars) + "☆".repeat(3 - stars)}</div>
+    <p>جاوبت صح على ${totalCorrect} من ${totalQ} سؤال في «${p.title}»</p>
+  `;
+  document.getElementById("win-overlay").hidden = false;
+  document.getElementById("win-report").onclick = () => {
+    document.getElementById("win-overlay").hidden = true;
+    document.getElementById("stage-screen").hidden = true;
+    document.getElementById("report-screen").hidden = false;
+  };
+}
+
+function renderReport(passage, stars, totalCorrect, totalQ, scores) {
+  document.getElementById("report-title").textContent = "بطاقة مهاراتي — " + passage.title;
+  document.getElementById("report-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  document.getElementById("report-desc").textContent = `${totalCorrect} من ${totalQ} إجابة صحيحة`;
+
+  const rows = document.getElementById("skill-rows");
+  rows.innerHTML = "";
+  THINKING_SKILLS.forEach((skill) => {
+    const s = scores[skill.id];
+    const ratio = s.total ? s.correct / s.total : 0;
+    const band = bandFor(ratio);
+    const row = document.createElement("div");
+    row.className = "skill-row";
+    row.innerHTML = `
+      <div class="skill-icon">${skill.icon}</div>
+      <div class="skill-info">
+        <div class="skill-name-row"><span>${skill.name}</span><span class="skill-score">${s.correct}/${s.total}</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill ${band}" style="width:${Math.round(ratio * 100)}%;"></div></div>
+        <div class="skill-tip">💡 ${skill.tip[band]}</div>
+      </div>
+    `;
+    rows.appendChild(row);
+  });
+
+  // قائمة الأخطاء — يشوف الطالب بالضبط وين غلط والإجابة الصحيحة
+  const mistakesSection = document.getElementById("mistakes-section");
+  const mistakesList = document.getElementById("mistakes-list");
+  mistakesList.innerHTML = "";
+  const mistakes = passage.questions
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ idx }) => curAnswers[idx] && !curAnswers[idx].isCorrect);
+  if (mistakes.length) {
+    mistakesSection.hidden = false;
+    mistakes.forEach(({ q, idx }) => {
+      const el = document.createElement("div");
+      el.className = "mistake-item";
+      el.innerHTML = `
+        <div class="mq">${q.q}</div>
+        <div class="my-answer">إجابتك: ${q.choices[curAnswers[idx].selected]}</div>
+        <div class="correct-answer">الصحيحة: ${q.choices[q.correct]}</div>
+      `;
+      mistakesList.appendChild(el);
+    });
+  } else {
+    mistakesSection.hidden = true;
+  }
+}
+
+// ---------------- ملخص مهاراتي الكلي (كل القصص المحلولة) ----------------
+document.getElementById("summary-btn").onclick = () => {
+  const KEY = "fasihoon_thinking_skills_totals";
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  const hasData = Object.values(all).some((s) => s.total > 0);
+  if (!hasData) {
+    Fakker.FX.wrong();
+    alert("لسه ما حليت أي قصة! ابدأ بأول قصة عشان يبان ملخص مهاراتك هنا 🧩");
+    return;
+  }
+  document.getElementById("map-screen").hidden = true;
+  document.getElementById("stage-screen").hidden = true;
+  document.getElementById("report-screen").hidden = false;
+  document.getElementById("report-title").textContent = "📊 ملخص مهاراتي الكلي";
+  document.getElementById("mistakes-section").hidden = true;
+  const totalCorrect = Object.values(all).reduce((a, s) => a + s.correct, 0);
+  const totalQ = Object.values(all).reduce((a, s) => a + s.total, 0);
+  document.getElementById("report-stars").textContent = "";
+  document.getElementById("report-desc").textContent = `من كل القصص اللي حليتها: ${totalCorrect} من ${totalQ} إجابة صحيحة`;
+  const rows = document.getElementById("skill-rows");
+  rows.innerHTML = "";
+  THINKING_SKILLS.forEach((skill) => {
+    const s = all[skill.id] || { correct: 0, total: 0 };
+    const ratio = s.total ? s.correct / s.total : 0;
+    const band = bandFor(ratio);
+    const row = document.createElement("div");
+    row.className = "skill-row";
+    row.innerHTML = `
+      <div class="skill-icon">${skill.icon}</div>
+      <div class="skill-info">
+        <div class="skill-name-row"><span>${skill.name}</span><span class="skill-score">${s.correct}/${s.total}</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill ${band}" style="width:${Math.round(ratio * 100)}%;"></div></div>
+        <div class="skill-tip">💡 ${skill.tip[band]}</div>
+      </div>
+    `;
+    rows.appendChild(row);
+  });
+};
+
+// بدء التشغيل — لو دخل الطالب من رابط واجب (?hw=...) افتح له قصته مباشرة بدون المرور بخريطة القصص
+Fakker.mountSettingsToggle();
+if (currentHwId) {
+  renderMap();
+  Fakker.Homework.fetchOne(currentHwId, (hw) => {
+    const idx = hw && hw.stageId != null ? hw.stageId - 1 : null;
+    if (idx != null && THINKING_PASSAGES[idx]) {
+      openStage(idx);
+      const banner = document.getElementById("hw-banner");
+      banner.hidden = false;
+      banner.textContent = "📮 واجبك من معلمك: " + THINKING_PASSAGES[idx].title;
+    } else if (!Fakker.Progress.db) {
+      alert("⚠️ تعذّر تحميل الواجب — افتح قصتك من الخريطة تحت، أو اطلب من معلمك رابط جديد");
+    } else {
+      alert("⚠️ ما لقيت هذا الواجب (ممكن الرابط قديم) — افتح قصتك من الخريطة تحت");
+    }
+  });
+} else {
+  renderMap();
+}
+</script>
+</body>
+</html>

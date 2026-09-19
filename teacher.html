@@ -167,6 +167,7 @@
 <script src="shared/asas-data-phase5.js"></script>
 <script src="shared/asas-data-phase6.js"></script>
 <script src="shared/asas-data-phase7.js"></script>
+<script src="shared/thinking-data.js"></script>
 <script>
 const profile = Fakker.Profile.get();
 if (!profile) location.href = "index.html";
@@ -219,7 +220,10 @@ function renderHomework() {
   panel.innerHTML = `
     <div class="card hw-create-card">
       <h3>➕ إنشاء واجب جديد</h3>
-      <select id="hw-stage-select">${ASAS_STAGES.map((s) => `<option value="${s.id}">${s.icon} ${s.title}</option>`).join("")}</select>
+      <select id="hw-stage-select">
+        <optgroup label="🌱 أساس القراءة">${ASAS_STAGES.map((s) => `<option value="asas:${s.id}">${s.icon} ${s.title}</option>`).join("")}</optgroup>
+        <optgroup label="🧩 مهارات التفكير">${THINKING_PASSAGES.map((p, i) => `<option value="thinking:${i + 1}">🧩 ${p.title}</option>`).join("")}</optgroup>
+      </select>
       <button class="big-btn" id="hw-create-btn" style="width:100%;">إنشاء رابط الواجب 🔗</button>
       <div id="hw-created-box" hidden>
         <p style="margin-top:12px;font-weight:800;color:#16a34a;">✅ تم إنشاء الواجب! انسخ الرابط وأرسله للطلاب:</p>
@@ -233,10 +237,13 @@ function renderHomework() {
     <div id="hw-list"><p style="text-align:center;">⏳ جاري التحميل...</p></div>
   `;
   document.getElementById("hw-create-btn").onclick = () => {
-    const stageId = parseInt(document.getElementById("hw-stage-select").value);
-    const stage = ASAS_STAGES.find((s) => s.id === stageId);
+    const [gameId, rawId] = document.getElementById("hw-stage-select").value.split(":");
+    const stageId = parseInt(rawId);
+    const stage = gameId === "thinking"
+      ? (THINKING_PASSAGES[stageId - 1] ? { id: stageId, title: THINKING_PASSAGES[stageId - 1].title } : null)
+      : ASAS_STAGES.find((s) => s.id === stageId);
     if (!stage) return;
-    Fakker.Homework.create(stage.id, stage.title, (hwId) => {
+    Fakker.Homework.create(gameId, stage.id, stage.title, (hwId) => {
       if (!hwId) { alert("تعذّر إنشاء الواجب، تأكد من الاتصال بالإنترنت"); return; }
       const link = location.origin + location.pathname.replace("teacher.html", "index.html") + "?hw=" + hwId;
       const box = document.getElementById("hw-created-box");
@@ -268,9 +275,10 @@ function renderHomeworkList() {
       const date = hw.createdAt ? new Date(hw.createdAt).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "";
       const card = document.createElement("div");
       card.className = "hw-card";
+      const gameBadge = hw.gameId === "thinking" ? "🧩" : "🌱";
       card.innerHTML = `
         <div class="head">
-          <span class="title">${hw.stageTitle || "مرحلة"}</span>
+          <span class="title">${gameBadge} ${hw.stageTitle || "مرحلة"}</span>
           <span class="date">${date}</span>
           <span class="count">${completions.length} أنجزوا</span>
         </div>
@@ -278,6 +286,7 @@ function renderHomeworkList() {
           ${completions.length ? completions.map((c) => `
             <div class="hw-student-row">
               <span>${c.avatar || "🧒"}</span><span style="flex:1;">${c.name || "طالب"}</span>
+              ${hw.gameId === "thinking" && c.score != null ? `<span style="font-size:11px;color:var(--text-soft);">${c.score}/14 صحيحة</span>` : ""}
               <span class="stars">${"★".repeat(c.stars || 0)}</span>
               <span style="font-size:11px;color:var(--text-soft);">${c.completedAt ? new Date(c.completedAt).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : ""}</span>
             </div>`).join("") : '<p style="text-align:center;color:var(--text-soft);">ولا طالب حل الواجب لسه.</p>'}
@@ -289,14 +298,31 @@ function renderHomeworkList() {
   });
 }
 
-// ---------- إجابات الطلاب (قِطع القراءة) ----------
+// ---------- إجابات الطلاب (قِطع القراءة + مهارات التفكير) ----------
+// إجابات مهارات التفكير محفوظة بمعرّف مرحلة مسبوق بـ"t" (مثل "t3") لتفادي تعارضها مع أرقام مراحل أساس القراءة
+function isThinkingStageId(stageId) { return typeof stageId === "string" && stageId.startsWith("t"); }
+
 function stagePassageLabel(stageId, passageIndex) {
+  if (isThinkingStageId(stageId)) {
+    const idx = parseInt(stageId.slice(1)) - 1;
+    const p = (typeof THINKING_PASSAGES !== "undefined") ? THINKING_PASSAGES[idx] : null;
+    return { stageTitle: "🧩 مهارات التفكير", passageTitle: p ? p.title : ("قصة #" + (idx + 1)) };
+  }
   const stage = (typeof ASAS_STAGES !== "undefined") ? ASAS_STAGES.find((s) => s.id == stageId) : null;
   if (!stage) return { stageTitle: "مرحلة #" + stageId, passageTitle: "مقطع #" + passageIndex };
   const item = stage.items && stage.items[passageIndex];
   return { stageTitle: stage.title, passageTitle: item ? item.title : ("مقطع #" + passageIndex) };
 }
 function fieldLabel(field, stageId, passageIndex) {
+  if (isThinkingStageId(stageId)) {
+    const idx = parseInt(stageId.slice(1)) - 1;
+    const p = (typeof THINKING_PASSAGES !== "undefined") ? THINKING_PASSAGES[idx] : null;
+    if (field.startsWith("q") && p) {
+      const i = parseInt(field.slice(1));
+      if (p.questions[i]) return p.questions[i].q;
+    }
+    return field;
+  }
   if (field === "complete") return "أكمل القصة";
   if (field === "ending") return "الخاتمة";
   const stage = (typeof ASAS_STAGES !== "undefined") ? ASAS_STAGES.find((s) => s.id == stageId) : null;

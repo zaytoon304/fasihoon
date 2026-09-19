@@ -53,6 +53,7 @@
   .activity-card p { color: rgba(255,255,255,.92); font-size: 14px; line-height: 1.6; }
   .activity-card[data-a="fasihoon"] { background: linear-gradient(155deg, var(--fasih-gold-light), var(--fasih-gold)); }
   .activity-card[data-a="asas"] { background: linear-gradient(155deg, #34d976, #16a34a); }
+  .activity-card[data-a="thinking"] { background: linear-gradient(155deg, #c4b5fd, #7c3aed); }
 
   .levels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
   .level-card {
@@ -125,6 +126,11 @@
       <h3>أساس القراءة</h3>
       <p>لسه ما تعرف تقرأ؟ ابدأ من هنا — صوت وصور، خطوة خطوة بدون عجلة</p>
     </div>
+    <div class="activity-card" data-a="thinking">
+      <div class="icon-badge">🧩</div>
+      <h3>مهارات التفكير</h3>
+      <p>١٥ قصة وأسئلة تقيس ٧ مهارات تفكير، مع بطاقة نتيجة ونصائح تحسين</p>
+    </div>
   </div>
 </main>
 
@@ -192,6 +198,7 @@
     card.onclick = () => {
       const a = card.dataset.a;
       if (a === "asas") { location.href = "games/asas.html"; return; }
+      if (a === "thinking") { location.href = "games/thinking.html"; return; }
       document.getElementById("home-screen").hidden = true;
       document.getElementById("levels-screen").hidden = false;
       renderLevels();
@@ -199,8 +206,13 @@
   });
   document.getElementById("back-to-home").onclick = goHome;
 
-  // رابط واجب من المعلم (?hw=...) — يوصل الطالب مباشرة لمرحلة أساس القراءة المحددة بعد كتابة اسمه
+  // رابط واجب من المعلم (?hw=...) — يوصل الطالب مباشرة للمرحلة/القصة المحددة بعد كتابة اسمه
+  // يدعم واجبات من أساس القراءة أو مهارات التفكير، حسب gameId المحفوظ مع الواجب نفسه
   const hwId = new URLSearchParams(location.search).get("hw");
+  function hwTargetUrl(hw) {
+    const page = (hw && hw.gameId === "thinking") ? "games/thinking.html" : "games/asas.html";
+    return page + "?hw=" + encodeURIComponent(hwId);
+  }
 
   document.getElementById("start-btn").onclick = () => {
     const name = document.getElementById("name-input").value.trim();
@@ -210,7 +222,7 @@
       return;
     }
     Fakker.Profile.create(name, selectedAvatar);
-    if (hwId) { location.href = "games/asas.html?hw=" + encodeURIComponent(hwId); return; }
+    if (hwId) { Fakker.Homework.fetchOne(hwId, (hw) => { location.href = hwTargetUrl(hw); }); return; }
     const profile = Fakker.Profile.get();
     showStudentBadge(profile);
     goHome();
@@ -220,7 +232,7 @@
   Fakker.mountSettingsToggle();
   renderAvatarGrid();
   const existing = Fakker.Profile.get();
-  if (hwId && existing) { location.href = "games/asas.html?hw=" + encodeURIComponent(hwId); }
+  if (hwId && existing) { Fakker.Homework.fetchOne(hwId, (hw) => { location.href = hwTargetUrl(hw); }); }
   else if (existing) { showStudentBadge(existing); goHome(); }
   else { document.getElementById("welcome-screen").hidden = false; }
 </script>
