@@ -33,6 +33,15 @@ Fakker.Profile = {
     return profile;
   },
   clear() { localStorage.removeItem(this.KEY); },
+  // "طالب جديد" — للأجهزة المشتركة (آيباد الفصل): يمسح اسم الطالب الحالي ويرجع لشاشة الترحيب
+  // (يحافظ على رابط الواجب ?hw= لو موجود، عشان الطالب التالي يحل نفس الواجب باسمه)
+  switchStudent(indexUrl) {
+    const current = this.get();
+    if (current && !confirm("إنهاء دور «" + current.name + "» والبدء باسم طالب جديد؟")) return;
+    const hw = new URLSearchParams(location.search).get("hw");
+    this.clear();
+    location.href = indexUrl + (hw ? "?hw=" + encodeURIComponent(hw) : "");
+  },
 };
 
 Fakker.Progress = {

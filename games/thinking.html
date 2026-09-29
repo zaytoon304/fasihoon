@@ -123,7 +123,9 @@
 
 <div class="topbar">
   <div class="brand"><span class="logo-emoji">🧩</span> فصحون</div>
-  <div style="display:flex;align-items:center;gap:8px;">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+    <span class="pill" id="student-pill"></span>
+    <span class="pill" id="new-student-btn" style="cursor:pointer;">🔄 طالب جديد</span>
     <span class="pill" id="wallet-pill">🪙 0</span>
     <a href="fasihoon.html" class="pill">📖 فصحون</a>
     <a href="../index.html" class="pill">🏠 الرئيسية</a>
@@ -206,6 +208,8 @@ if (!_profile) location.href = "../index.html" + (currentHwId ? "?hw=" + encodeU
 
 function refreshWallet() { document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance; }
 refreshWallet();
+if (_profile) document.getElementById("student-pill").textContent = _profile.avatar + " " + _profile.name;
+document.getElementById("new-student-btn").onclick = () => Fakker.Profile.switchStudent("../index.html");
 
 function hwReportCompletion(stars, score, scores) {
   if (!currentHwId || curIndex == null) return;
@@ -266,7 +270,8 @@ document.getElementById("win-map").onclick = () => { document.getElementById("wi
 let curIndex = null;
 let curAnswers = {}; // qIndex -> { selected, correct }
 
-function answerKey(field) { return "fk_thinking_answer_" + curIndex + "_" + field; }
+// مربوطة بمعرّف الطالب — على جهاز مشترك كل طالب جديد يلاقي القصة فاضية
+function answerKey(field) { return "fk_thinking_answer_" + _profile.id + "_" + curIndex + "_" + field; }
 
 function openStage(i) {
   curIndex = i;

@@ -93,6 +93,7 @@
     <div id="student-badge" class="pill student-pill" hidden>
       <span class="av"></span><span class="name"></span><span>⭐ <span class="stars">0</span></span>
     </div>
+    <span class="pill" id="new-student-btn" style="cursor:pointer;" hidden>🔄 طالب جديد</span>
   </div>
 </div>
 
@@ -173,7 +174,9 @@
     document.getElementById("wallet-pill").hidden = false;
     document.getElementById("wallet-pill").textContent = "🪙 " + Fakker.Wallet.get().balance;
     document.getElementById("store-link").hidden = false;
+    document.getElementById("new-student-btn").hidden = false;
   }
+  document.getElementById("new-student-btn").onclick = () => Fakker.Profile.switchStudent("index.html");
 
   function goHome() {
     document.getElementById("welcome-screen").hidden = true;

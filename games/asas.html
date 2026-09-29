@@ -211,7 +211,9 @@
 
 <div class="topbar">
   <div class="brand"><span class="logo-emoji">📖</span> فصحون</div>
-  <div style="display:flex;align-items:center;gap:8px;">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+    <span class="pill" id="student-pill"></span>
+    <span class="pill" id="new-student-btn" style="cursor:pointer;">🔄 طالب جديد</span>
     <span class="pill" id="wallet-pill">🪙 0</span>
     <a href="fasihoon.html" class="pill">📖 فصحون</a>
     <a href="../index.html" class="pill">🏠 الرئيسية</a>
@@ -356,6 +358,7 @@
       </div>
       <div style="text-align:center; margin-top:16px;">
         <div class="listen-btn" id="pg-next" style="background:linear-gradient(135deg,var(--accent),#5b21b6);">أنهيت هذا المقطع، التالي ← 📖</div>
+        <div style="margin-top:12px;"><span class="nav-btn" id="pg-reset" style="cursor:pointer;display:inline-block;">🔁 أعد حل هذا المقطع</span></div>
       </div>
     </div>
   </section>
@@ -395,6 +398,8 @@ const profile = Fakker.Profile.get();
 if (!profile) location.href = "../index.html" + (currentHwId ? "?hw=" + encodeURIComponent(currentHwId) : "");
 
 Fakker.mountSettingsToggle();
+if (profile) document.getElementById("student-pill").textContent = profile.avatar + " " + profile.name;
+document.getElementById("new-student-btn").onclick = () => Fakker.Profile.switchStudent("../index.html");
 
 // تقرير إنجاز الواجب (لو دخل الطالب من رابط واجب) — يُنادى من كل نقاط إنهاء المرحلة
 function hwReportCompletion(stars, score) {
@@ -438,11 +443,8 @@ function speak(text) {
 
 // ---------------- خريطة المراحل ----------------
 function stageStars(stage) { return Fakker.Progress.get(GAME_ID, stage.id).bestStars; }
-function isUnlocked(stage) {
-  if (stage.id === 1 || stage.free) return true; // free: مراحل مستقلة عن التسلسل (ملفات لغتي ثالث)
-  const prev = ASAS_STAGES.find((s) => s.id === stage.id - 1);
-  return prev && stageStars(prev) >= 1;
-}
+// كل المراحل مفتوحة (طلب محمد 2026-09-29 — الطالب يختار أي مرحلة بدون انتظار التسلسل)
+function isUnlocked(stage) { return true; }
 
 function renderMap() {
   const grid = document.getElementById("stage-grid");
@@ -889,10 +891,12 @@ function startPassages() {
   renderPassage();
 }
 
-// حفظ إجابات الطالب المكتوبة محلياً (بدون تصحيح آلي — بس عشان ما تضيع لو رجع لنفس المقطع)
-function pgAnswerKey(field) {
-  return "fk_asas_answer_" + curStage.id + "_" + pgSession.index + "_" + field;
+// حفظ إجابات الطالب محلياً — مربوطة بمعرّف الطالب، عشان على جهاز مشترك (آيباد الفصل)
+// كل طالب جديد يلاقي النموذج فاضي، ونفس الطالب يلاقي إجاباته لو رجع
+function pgPassagePrefix() {
+  return "fk_asas_answer_" + profile.id + "_" + curStage.id + "_" + pgSession.index + "_";
 }
+function pgAnswerKey(field) { return pgPassagePrefix() + field; }
 // يبني 4 خيارات لسؤال فهم: الإجابة الصحيحة + 3 مسحوبة عشوائياً من باقي إجابات نفس المرحلة
 // (لو السؤال له خيارات أصلية من الملف في passage.options تُستخدم هي — مخلوطة، ما عدا صح/خطأ يبقى بترتيبه)
 function pgMCQChoices(passage, qIndex) {
@@ -1062,6 +1066,16 @@ document.getElementById("pg-next").onclick = () => {
   refreshWallet();
   pgSession.index++;
   if (pgSession.index >= curStage.items.length) return endPassages();
+  renderPassage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+document.getElementById("pg-reset").onclick = () => {
+  if (!confirm("مسح إجاباتك في هذا المقطع والحل من جديد؟")) return;
+  const prefix = pgPassagePrefix();
+  try {
+    Object.keys(localStorage).filter((k) => k.startsWith(prefix)).forEach((k) => localStorage.removeItem(k));
+  } catch (e) {}
   renderPassage();
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
