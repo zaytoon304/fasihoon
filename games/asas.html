@@ -170,7 +170,7 @@
   .passage-card { max-width: 620px; margin: 14px auto; padding: 26px 24px; }
   .passage-title { font-family: 'Reem Kufi','Tajawal',sans-serif; font-size: 22px; text-align: center; color: var(--asas-gold); margin-bottom: 4px; }
   .passage-counter { text-align: center; font-size: 13px; opacity: .7; margin-bottom: 14px; }
-  .passage-story { font-family: 'Amiri','Tajawal',serif; font-size: 21px; line-height: 2.1; text-align: justify; }
+  .passage-story { font-family: 'Amiri','Tajawal',serif; font-size: 21px; line-height: 2.1; text-align: justify; white-space: pre-line; }
   .section-label { font-weight: 800; font-size: 14px; color: var(--asas-gold); margin: 18px 0 8px; display: flex; align-items: center; gap: 6px; }
   .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
@@ -387,6 +387,7 @@
 <script src="../shared/asas-data-phase5.js"></script>
 <script src="../shared/asas-data-phase6.js"></script>
 <script src="../shared/asas-data-phase7.js"></script>
+<script src="../shared/asas-data-phase8.js"></script>
 <script>
 const GAME_ID = "asas";
 const currentHwId = new URLSearchParams(location.search).get("hw");
@@ -438,7 +439,7 @@ function speak(text) {
 // ---------------- خريطة المراحل ----------------
 function stageStars(stage) { return Fakker.Progress.get(GAME_ID, stage.id).bestStars; }
 function isUnlocked(stage) {
-  if (stage.id === 1) return true;
+  if (stage.id === 1 || stage.free) return true; // free: مراحل مستقلة عن التسلسل (ملفات لغتي ثالث)
   const prev = ASAS_STAGES.find((s) => s.id === stage.id - 1);
   return prev && stageStars(prev) >= 1;
 }
@@ -893,7 +894,10 @@ function pgAnswerKey(field) {
   return "fk_asas_answer_" + curStage.id + "_" + pgSession.index + "_" + field;
 }
 // يبني 4 خيارات لسؤال فهم: الإجابة الصحيحة + 3 مسحوبة عشوائياً من باقي إجابات نفس المرحلة
+// (لو السؤال له خيارات أصلية من الملف في passage.options تُستخدم هي — مخلوطة، ما عدا صح/خطأ يبقى بترتيبه)
 function pgMCQChoices(passage, qIndex) {
+  const own = passage.options && passage.options[qIndex];
+  if (own) return own[0].startsWith("صح") ? own.slice() : shuffleAsas(own);
   const correct = passage.answers[qIndex];
   const pool = [];
   curStage.items.forEach((item) => {
