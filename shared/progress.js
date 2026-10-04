@@ -22,14 +22,48 @@ Fakker.Profile = {
     try { return JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { return null; }
   },
   save(profile) { localStorage.setItem(this.KEY, JSON.stringify(profile)); },
+  // قائمة كل الطلاب اللي سجّلوا على هذا الجهاز — "طالب جديد" ما يمسح أحد منها
+  LIST_KEY: "fasihoon_students",
+  list() {
+    let list;
+    try { list = JSON.parse(localStorage.getItem(this.LIST_KEY)) || []; } catch (e) { list = []; }
+    // الطالب الحالي من قبل التحديث ما كان محفوظ بالقائمة
+    const current = this.get();
+    if (current && !list.some((s) => s.id === current.id)) {
+      list.push(current);
+      localStorage.setItem(this.LIST_KEY, JSON.stringify(list));
+    }
+    return list;
+  },
+  _saveList(list) { localStorage.setItem(this.LIST_KEY, JSON.stringify(list)); },
+  // توحيد الاسم عشان «أحمد» و«احمد » يكونون نفس الطالب
+  _norm(name) {
+    return name.trim().replace(/\s+/g, " ").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  },
   create(name, avatar) {
+    const list = this.list();
+    const existing = list.find((s) => this._norm(s.name) === this._norm(name));
+    if (existing) {
+      // نفس الطالب رجع: نكمّل على معرّفه القديم فترجع له إجاباته ونجومه
+      if (avatar) existing.avatar = avatar;
+      this._saveList(list);
+      this.save(existing);
+      return existing;
+    }
     const profile = {
       id: "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       name: name.trim(),
       avatar: avatar || "🦊",
       createdAt: Date.now(),
     };
+    list.push(profile);
+    this._saveList(list);
     this.save(profile);
+    return profile;
+  },
+  select(id) {
+    const profile = this.list().find((s) => s.id === id);
+    if (profile) this.save(profile);
     return profile;
   },
   clear() { localStorage.removeItem(this.KEY); },
@@ -37,7 +71,7 @@ Fakker.Profile = {
   // (يحافظ على رابط الواجب ?hw= لو موجود، عشان الطالب التالي يحل نفس الواجب باسمه)
   switchStudent(indexUrl) {
     const current = this.get();
-    if (current && !confirm("إنهاء دور «" + current.name + "» والبدء باسم طالب جديد؟")) return;
+    if (current && !confirm("إنهاء دور «" + current.name + "» والبدء باسم طالب جديد؟\n(إجابات «" + current.name + "» محفوظة، ويرجع لها لما يختار اسمه)")) return;
     const hw = new URLSearchParams(location.search).get("hw");
     this.clear();
     location.href = indexUrl + (hw ? "?hw=" + encodeURIComponent(hw) : "");
@@ -49,7 +83,8 @@ Fakker.Progress = {
   init() {
     if (typeof fakkerInitFirebase === "function") this.db = fakkerInitFirebase();
   },
-  KEY: "fasihoon_progress",
+  // نجوم كل طالب لحاله (المفتاح القديم بدون معرّف يبقى لجلسات ما قبل التحديث)
+  get KEY() { const p = Fakker.Profile.get(); return p ? "fasihoon_progress_" + p.id : "fasihoon_progress"; },
   _all() {
     try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; }
   },
@@ -294,3 +329,20 @@ Fakker.FX = {
 };
 
 Fakker.Progress.init();
+
+// ترحيل لمرة وحدة: قبل التحديث كانت النجوم والمحفظة وملخص المهارات للجهاز كله،
+// فنعطيها للطالب المسجّل حاليًا عشان ما يضيع شي
+(function migrateToPerStudent() {
+  const FLAG = "fasihoon_per_student_v1";
+  if (localStorage.getItem(FLAG)) return;
+  const p = Fakker.Profile.get();
+  if (!p) return;
+  Fakker.Profile.list();
+  ["fasihoon_progress", "fakker_wallet", "fasihoon_thinking_skills_totals"].forEach((oldKey) => {
+    const val = localStorage.getItem(oldKey);
+    const newKey = oldKey + "_" + p.id;
+    if (val !== null && localStorage.getItem(newKey) === null) localStorage.setItem(newKey, val);
+    localStorage.removeItem(oldKey);
+  });
+  localStorage.setItem(FLAG, "1");
+})();

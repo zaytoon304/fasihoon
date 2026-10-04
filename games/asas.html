@@ -470,7 +470,7 @@ let curStage = null;
 let learnIndex = 0;
 let session = null; // { queue, qIndex, current, tries, correctFirstTry, streak, best }
 
-function learnedKey(stage) { return "fk_asas_learned_" + stage.key; }
+function learnedKey(stage) { return "fk_asas_learned_" + profile.id + "_" + stage.key; }
 
 const ALL_MODE_IDS = ["learn-mode", "practice-mode", "sentord-mode", "storyord-mode", "passage-mode"];
 function showOnlyMode(id) {

@@ -101,6 +101,11 @@
 <section id="welcome-screen" class="center-screen">
   <div class="card">
     <h2>أهلاً فيك! 👋</h2>
+    <div id="saved-students" hidden>
+      <p style="margin-top:8px;">لعبت قبل؟ اضغط على اسمك وكمّل 👇</p>
+      <div id="saved-students-list" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0 14px;max-height:180px;overflow-y:auto;"></div>
+      <p style="margin-bottom:0;">أو طالب جديد:</p>
+    </div>
     <p style="margin-top:8px;">وش اسمك؟</p>
     <input id="name-input" type="text" maxlength="20" placeholder="اكتب اسمك هنا">
     <p style="margin-bottom:8px;">اختر شخصيتك</p>
@@ -224,16 +229,36 @@
       document.getElementById("name-input").style.borderColor = "#ef4444";
       return;
     }
-    Fakker.Profile.create(name, selectedAvatar);
+    enterAs(Fakker.Profile.create(name, selectedAvatar));
+  };
+
+  function enterAs(profile) {
     if (hwId) { Fakker.Homework.fetchOne(hwId, (hw) => { location.href = hwTargetUrl(hw); }); return; }
-    const profile = Fakker.Profile.get();
     showStudentBadge(profile);
     goHome();
-  };
+  }
+
+  // الطلاب اللي لعبوا قبل على هذا الجهاز — ضغطة على الاسم ويرجع لإجاباته ونجومه
+  function renderSavedStudents() {
+    const students = Fakker.Profile.list().slice().sort((a, b) => a.name.localeCompare(b.name, "ar"));
+    const box = document.getElementById("saved-students");
+    const list = document.getElementById("saved-students-list");
+    box.hidden = students.length === 0;
+    list.innerHTML = "";
+    students.forEach((s) => {
+      const el = document.createElement("span");
+      el.className = "pill";
+      el.style.cursor = "pointer";
+      el.textContent = s.avatar + " " + s.name;
+      el.onclick = () => enterAs(Fakker.Profile.select(s.id));
+      list.appendChild(el);
+    });
+  }
 
   // بدء التشغيل
   Fakker.mountSettingsToggle();
   renderAvatarGrid();
+  renderSavedStudents();
   const existing = Fakker.Profile.get();
   if (hwId && existing) { Fakker.Homework.fetchOne(hwId, (hw) => { location.href = hwTargetUrl(hw); }); }
   else if (existing) { showStudentBadge(existing); goHome(); }

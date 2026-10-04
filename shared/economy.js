@@ -4,7 +4,8 @@ function fkUid() { return "id_" + Date.now().toString(36) + Math.random().toStri
 
 // ---------------- المحفظة ----------------
 Fakker.Wallet = {
-  KEY: "fakker_wallet",
+  // محفظة كل طالب لحاله
+  get KEY() { const p = Fakker.Profile.get(); return p ? "fakker_wallet_" + p.id : "fakker_wallet"; },
   _state() {
     try {
       return Object.assign({ balance: 0, lifetime: 0, ledger: [] }, JSON.parse(localStorage.getItem(this.KEY)) || {});

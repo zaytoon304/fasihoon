@@ -386,7 +386,7 @@ function computeSkillScores() {
 function bandFor(ratio) { return ratio >= 0.8 ? "strong" : ratio >= 0.5 ? "mid" : "weak"; }
 
 function saveCumulativeSkills(scores) {
-  const KEY = "fasihoon_thinking_skills_totals";
+  const KEY = "fasihoon_thinking_skills_totals_" + _profile.id;
   let all = {};
   try { all = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
   THINKING_SKILLS.forEach((s) => {
@@ -478,7 +478,7 @@ function renderReport(passage, stars, totalCorrect, totalQ, scores) {
 
 // ---------------- ملخص مهاراتي الكلي (كل القصص المحلولة) ----------------
 document.getElementById("summary-btn").onclick = () => {
-  const KEY = "fasihoon_thinking_skills_totals";
+  const KEY = "fasihoon_thinking_skills_totals_" + _profile.id;
   let all = {};
   try { all = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
   const hasData = Object.values(all).some((s) => s.total > 0);
