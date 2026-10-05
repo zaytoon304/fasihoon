@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>تحدي المفردات — فصحون</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#0f2b5b;--bg2:#1d4f91;--gold:#ffc83d;--ok:#22c55e;--bad:#ef4444;--card:#fff;--ink:#132042;--muted:#64748b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Cairo,sans-serif;min-height:100vh;background:radial-gradient(circle at 20% 10%,#2b6cc4 0,transparent 45%),linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);display:flex;justify-content:center;padding:16px}
+.app{width:100%;max-width:640px}
+.screen{display:none;animation:in .35s ease}.screen.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{text-align:center;color:#fff;padding:18px 0 10px}
+.hero .ic{font-size:64px;animation:bob 2s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-8px)}}
+.hero h1{font-size:34px;font-weight:900;line-height:1.3}.hero p{opacity:.85;font-weight:700;font-size:17px}
+.card{background:var(--card);border-radius:24px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.25);margin-top:14px}
+label.t{display:block;font-weight:800;margin-bottom:6px;color:var(--muted)}
+input{width:100%;font-family:inherit;font-size:20px;font-weight:700;padding:12px 14px;border:3px solid #dbe3f0;border-radius:16px;outline:none}input:focus{border-color:var(--bg2)}
+.groups{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.g{border:3px solid #dbe3f0;border-radius:18px;padding:12px 8px;text-align:center;cursor:pointer;font-weight:800;font-size:16px;transition:.15s;background:#f8fafc}
+.g .e{font-size:30px;display:block}.g.on{border-color:var(--gold);background:#fff7dc;transform:scale(1.03)}
+.g.all{grid-column:1/-1}
+.btn{display:block;width:100%;border:0;font-family:inherit;font-size:24px;font-weight:900;padding:15px;border-radius:20px;cursor:pointer;margin-top:14px;background:linear-gradient(180deg,#ffd75e,#f5b700);color:#3b2a00;box-shadow:0 6px 0 #c48f00;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #c48f00}
+.btn.sec{background:#e9eef7;color:var(--ink);box-shadow:0 6px 0 #c3cde0;font-size:20px}
+.best{text-align:center;color:#fff;margin-top:12px;font-weight:800;opacity:.9}
+/* اللعب */
+.top{display:flex;align-items:center;gap:10px;color:#fff;font-weight:900}
+.pill{background:rgba(255,255,255,.15);border-radius:999px;padding:6px 14px;font-size:18px;white-space:nowrap}
+.bar{flex:1;height:14px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:99px;transition:width .4s}
+.timer{height:8px;background:#e5eaf3;border-radius:99px;overflow:hidden;margin-bottom:12px}.timer i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.qtype{font-weight:800;color:var(--muted);font-size:15px}
+.q{font-size:26px;font-weight:900;line-height:1.6;margin:6px 0 14px;text-align:center}
+.q b{color:#1d4f91;background:#e8f0ff;border-radius:10px;padding:0 8px}
+.q .blank{display:inline-block;min-width:90px;border-bottom:4px dashed var(--gold);color:var(--gold)}
+.opts{display:grid;gap:10px}
+.opt{border:3px solid #dbe3f0;background:#f8fafc;border-radius:18px;padding:13px 16px;font-family:inherit;font-size:21px;font-weight:800;color:var(--ink);cursor:pointer;text-align:right;display:flex;gap:12px;align-items:center;transition:.15s}
+.opt span{flex:none;width:36px;height:36px;border-radius:12px;background:var(--bg1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.opt:hover{border-color:#9db4dc}
+.opt.ok{border-color:var(--ok);background:#dcfce7;animation:pop .35s}.opt.ok span{background:var(--ok)}
+.opt.bad{border-color:var(--bad);background:#fee2e2;animation:shake .4s}.opt.bad span{background:var(--bad)}
+.opt:disabled{cursor:default}
+@keyframes pop{50%{transform:scale(1.04)}}@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{min-height:34px;text-align:center;font-weight:900;font-size:19px;margin-top:10px}
+.fb.ok{color:#15803d}.fb.bad{color:#b91c1c}
+.combo{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:44px;font-weight:900;color:var(--gold);text-shadow:0 4px 0 #7a4b00,0 0 30px rgba(0,0,0,.4);pointer-events:none;transition:transform .25s}
+.combo.show{transform:translate(-50%,-50%) scale(1)}
+/* النتيجة */
+.res{text-align:center}.stars{font-size:54px;letter-spacing:6px}
+.big{font-size:56px;font-weight:900;color:#1d4f91}.res h2{font-size:28px;font-weight:900}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stats div{background:#f1f5fb;border-radius:16px;padding:8px}.stats b{display:block;font-size:26px}.stats small{color:var(--muted);font-weight:800}
+.rev{text-align:right;margin-top:10px;max-height:260px;overflow:auto}.rev div{border-right:5px solid var(--bad);background:#fff5f5;border-radius:12px;padding:8px 12px;margin-bottom:8px;font-weight:700;font-size:16px}
+.rev div b{color:#15803d}
+canvas#fx{position:fixed;inset:0;pointer-events:none;width:100%;height:100%}
+.foot{color:#fff;opacity:.6;text-align:center;font-size:13px;margin-top:16px;font-weight:700}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="app">
+  <!-- البداية -->
+  <section class="screen on" id="s0">
+    <div class="hero"><div class="ic">🦌🐢🐭🐦</div><h1>تحدّي المفردات</h1><p>الصياد يطارد الأصدقاء… أنقذهم بإجاباتك الصحيحة!</p></div>
+    <div class="card">
+      <label class="t">✍️ اكتب اسمك</label><input id="nm" placeholder="اسمك هنا" maxlength="30">
+      <label class="t" style="margin-top:14px">🎯 اختر المجموعة</label>
+      <div class="groups" id="groups"></div>
+      <button class="btn" id="start">🚀 ابدأ التحدي</button>
+    </div>
+    <div class="best" id="best"></div>
+  </section>
+  <!-- اللعب -->
+  <section class="screen" id="s1">
+    <div class="top"><span class="pill" id="qn">١/١٥</span><div class="bar"><i id="prog"></i></div><span class="pill">⭐ <b id="sc">0</b></span><span class="pill" id="st">🔥0</span></div>
+    <div class="card">
+      <div class="timer"><i id="tm"></i></div>
+      <div class="qtype" id="qt"></div><div class="q" id="q"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+    </div>
+  </section>
+  <!-- النتيجة -->
+  <section class="screen" id="s2">
+    <div class="card res">
+      <div class="stars" id="stars"></div><h2 id="rt"></h2><div class="big" id="rs"></div>
+      <div class="stats"><div><b id="r1">0</b><small>صحيحة ✅</small></div><div><b id="r2">0</b><small>خاطئة ❌</small></div><div><b id="r3">0</b><small>أطول سلسلة 🔥</small></div></div>
+      <div class="rev" id="rev"></div>
+      <button class="btn" id="again">🔁 العب مرة أخرى</button><button class="btn sec" id="home">🏠 اختر مجموعة أخرى</button>
+    </div>
+  </section>
+  <div class="foot">فصحون · لعبة المفردات</div>
+</div>
+<div class="combo" id="combo"></div>
+
+<script>
+const GROUPS = [
+  { e: '😱', n: 'الخوف والخطر',
+    w: [['ارتعبت', 'خافت بشدة'], ['يطاردني', 'يلاحقني'], ['وقع في شباك الصياد', 'تم أسره أو أُمسك به'], ['الأسر', 'القبض أو الإمساك'], ['فقد الأمل', 'يئس، لم يعد يتوقع حدوث ما يريد'], ['أغث', 'أنقذ وساعد بسرعة']],
+    c: [['____ الطفلُ من صوت الرعد.', 'ارتعب'], ['كان الذئب ____ في الغابة.', 'يطاردني'], ['وقع الطائر في ____ الصياد.', 'شباك'], ['وقع الغزال في ____.', 'الأسر'], ['فقد ____ في النجاة.', 'الأمل'], ['____! أنا في خطر.', 'أغثني']] },
+  { e: '👀', n: 'المراقبة والتفكير',
+    w: [['يطيل النظر', 'ينظر لمدة طويلة وبتركيز'], ['يرقب', 'يراقب وينظر بانتباه شديد'], ['تداولوا', 'تناقشوا وتبادلوا الآراء'], ['يتظاهر', 'يتصرف كأن شيئًا ما حقيقي وهو ليس كذلك'], ['زعموا', 'ادّعوا أو قالوا']],
+    c: [['يطيل ____ إلى السماء.', 'النظر'], ['يرقب الصياد من ____.', 'بعيد'], ['تداولوا ____ حول الخطة.', 'الرأي'], ['الثعلب يتظاهر ____ نائم.', 'بأنه'], ['____ أن الكنز تحت الشجرة.', 'زعموا']] },
+  { e: '🤝', n: 'الصداقة والتعاون',
+    w: [['تعاهدوا', 'اتفقوا وتواعدوا والتزموا بوعد مشترك'], ['رفيقيه', 'صديقيه'], ['فراق', 'الابتعاد عن شخص عزيز'], ['هذا أمر لا يُرجى فيه خلافك', 'لا يُتوقع أن يُنجز الأمر بدونك'], ['أصاب', 'حدث له شيء']],
+    c: [['تعاهد الأصدقاء ____ الوفاء.', 'على'], ['ساعد الغراب ____ في الشدة.', 'رفيقيه'], ['شعر بالحزن بسبب ____.', 'الفراق'], ['____ الخوفُ حين رأى الصياد.', 'أصابه'], ['هذا أمر لا يُرجى فيه ____.', 'خلافك']] },
+  { e: '🌿', n: 'المكان والحركة',
+    w: [['جرذ', 'فأر'], ['أقبلت', 'جاءت'], ['غاصت', 'نزلت إلى داخل الماء'], ['المرعى', 'المكان الذي تأكل فيه الحيوانات العشب'], ['أقام', 'عاش بينهم'], ['عريش', 'بيت بسيط من الأغصان'], ['يقرض', 'يقطع بأسنانه'], ['فاجأنا', 'ظهر فجأة دون توقع'], ['يغريان', 'يجعلان الصياد يطمع ويُخدع'], ['مقطعة', 'ممزقة ومفرقة الأجزاء']],
+    c: [['____ صغير يختبئ في الجحر.', 'جرذ'], ['____ الحيوانات نحو النهر.', 'أقبلت'], ['____ السلحفاة في الماء.', 'غاصت'], ['ذهبت الغزالة إلى ____.', 'المرعى'], ['أقام في ____ من الأغصان.', 'عريش'], ['____ الجرذ الحبل بأسنانه.', 'يقرض'], ['____ الأسد بظهوره.', 'فاجأنا'], ['الغزال والسلحفاة ____ الصياد.', 'يغريان'], ['صارت الشبكة ____ قطعًا.', 'مقطعة']] },
+];
+const AR = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]), LET = ['أ', 'ب', 'ج', 'د'];
+const $ = id => document.getElementById(id), shuf = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
+let pick = 'all', Q = [], qi = 0, score = 0, streak = 0, bestStreak = 0, right = 0, wrong = [], tmr = 0, tLeft = 0, locked = false;
+const TIME = 20;
+
+/* الأصوات (بلا ملفات) */
+let AC; const tone = (f, d = .12, type = 'sine', v = .12, delay = 0) => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + delay; o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + .02); } catch (e) { } };
+const sOk = () => { tone(660); tone(880, .15, 'sine', .12, .09); }, sBad = () => tone(180, .3, 'square', .07), sWin = () => [523, 659, 784, 1046].forEach((f, i) => tone(f, .2, 'triangle', .12, i * .12));
+
+/* اختيار المجموعة */
+$('groups').innerHTML = GROUPS.map((g, i) => `<div class="g" data-g="${i}"><span class="e">${g.e}</span>${g.n}</div>`).join('') + `<div class="g all on" data-g="all"><span class="e">🌟</span>كل المجموعات</div>`;
+document.querySelectorAll('.g').forEach(el => el.onclick = () => { pick = el.dataset.g; document.querySelectorAll('.g').forEach(x => x.classList.toggle('on', x === el)); });
+$('nm').value = store.get('muf_name', '');
+const showBest = () => { const b = store.get('muf_best', null); $('best').textContent = b ? `🏆 أفضل نتيجة لك: ${AR(b)} نقطة` : ''; }; showBest();
+
+/* بناء الأسئلة: معنى الكلمة · الكلمة من معناها · أكمل الجملة */
+function build() {
+  const gs = pick === 'all' ? GROUPS : [GROUPS[+pick]], W = gs.flatMap(g => g.w), C = gs.flatMap(g => g.c);
+  const allW = GROUPS.flatMap(g => g.w), allC = GROUPS.flatMap(g => g.c);
+  const opts = (ans, pool) => shuf([ans, ...shuf([...new Set(pool.filter(x => x !== ans))]).slice(0, 3)]);
+  const items = [];
+  W.forEach(([w, m]) => { items.push({ t: '📖 ما معنى الكلمة؟', q: `ما معنى «<b>${w}</b>»؟`, a: m, o: opts(m, (W.length >= 4 ? W : allW).map(x => x[1])) });
+    items.push({ t: '🔎 أي كلمة تناسب المعنى؟', q: `أيّ كلمة تعني: «<b>${m}</b>»؟`, a: w, o: opts(w, (W.length >= 4 ? W : allW).map(x => x[0])) }); });
+  C.forEach(([s, a]) => items.push({ t: '🧩 أكمل الجملة بالكلمة المناسبة', q: s.replace('____', '<span class="blank">؟</span>'), a, full: s.replace('____', a), o: opts(a, (C.length >= 4 ? C : allC).map(x => x[1])) }));
+  const n = pick === 'all' ? 20 : 15;
+  return shuf(items).slice(0, Math.min(n, items.length));
+}
+
+function start() {
+  store.set('muf_name', $('nm').value.trim());
+  Q = build(); qi = 0; score = 0; streak = 0; bestStreak = 0; right = 0; wrong = [];
+  show('s1'); ask();
+}
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); window.scrollTo(0, 0); }
+
+function ask() {
+  const it = Q[qi]; locked = false;
+  $('qn').textContent = `${AR(qi + 1)}/${AR(Q.length)}`; $('prog').style.width = (qi / Q.length * 100) + '%';
+  $('qt').textContent = it.t; $('q').innerHTML = it.q; $('fb').textContent = ''; $('fb').className = 'fb';
+  $('opts').innerHTML = it.o.map((o, i) => `<button class="opt" data-v="${o}"><span>${LET[i]}</span>${o}</button>`).join('');
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(b));
+  tLeft = TIME; clearInterval(tmr); const bar = $('tm');
+  tmr = setInterval(() => { tLeft -= .1; bar.style.width = Math.max(0, tLeft / TIME * 100) + '%'; bar.style.background = tLeft < 5 ? 'var(--bad)' : tLeft < 10 ? 'var(--gold)' : 'var(--ok)'; if (tLeft <= 0) answer(null); }, 100);
+}
+
+function answer(btn) {
+  if (locked) return; locked = true; clearInterval(tmr);
+  const it = Q[qi], ok = btn && btn.dataset.v === it.a;
+  document.querySelectorAll('.opt').forEach(b => { b.disabled = true; if (b.dataset.v === it.a) b.classList.add('ok'); });
+  if (ok) {
+    streak++; bestStreak = Math.max(bestStreak, streak); right++;
+    const pts = 10 + Math.round(tLeft / 2) + (streak >= 3 ? 5 : 0); score += pts; sOk();
+    $('fb').textContent = ['أحسنت! 🎉', 'رائع! 🌟', 'ممتاز! 💪', 'بطل! 🏆'][Math.random() * 4 | 0] + ` +${AR(pts)}`; $('fb').className = 'fb ok';
+    if (streak >= 3) combo(`🔥 ${AR(streak)} متتالية!`);
+    burst(30);
+  } else {
+    streak = 0; sBad(); if (btn) btn.classList.add('bad');
+    wrong.push(it); $('fb').textContent = btn ? `الإجابة الصحيحة: ${it.a}` : `⏰ انتهى الوقت! الصحيحة: ${it.a}`; $('fb').className = 'fb bad';
+  }
+  $('sc').textContent = AR(score); $('st').textContent = '🔥' + AR(streak);
+  setTimeout(() => { qi++; qi < Q.length ? ask() : finish(); }, ok ? 1100 : 2200);
+}
+
+function finish() {
+  $('prog').style.width = '100%'; show('s2');
+  const pct = right / Q.length, nm = $('nm').value.trim();
+  $('stars').textContent = pct >= .9 ? '⭐⭐⭐' : pct >= .7 ? '⭐⭐☆' : pct >= .5 ? '⭐☆☆' : '☆☆☆';
+  $('rt').textContent = (nm ? nm + '، ' : '') + (pct >= .9 ? 'أنقذت كل الأصدقاء! 🏆' : pct >= .7 ? 'عمل رائع! 👏' : pct >= .5 ? 'جيد… تستطيع أفضل! 💪' : 'لا بأس، جرّب مرة أخرى 🌱');
+  $('rs').textContent = AR(score) + ' نقطة';
+  $('r1').textContent = AR(right); $('r2').textContent = AR(Q.length - right); $('r3').textContent = AR(bestStreak);
+  $('rev').innerHTML = wrong.length ? `<h3 style="margin-bottom:8px">📝 راجع هذه:</h3>` + wrong.map(w => `<div>${w.full ? w.full.replace(w.a, `<b>${w.a}</b>`) : w.q.replace(/<\/?b>/g, '') + ' ← <b>' + w.a + '</b>'}</div>`).join('') : '<p style="font-weight:900;color:#15803d">لا أخطاء! 🎉</p>';
+  const b = store.get('muf_best', 0); if (score > b) store.set('muf_best', score); showBest();
+  if (pct >= .7) { sWin(); burst(160); }
+}
+
+function combo(t) { const c = $('combo'); c.textContent = t; c.classList.add('show'); setTimeout(() => c.classList.remove('show'), 900); }
+
+/* قصاصات الاحتفال */
+const cv = $('fx'), cx = cv.getContext('2d'); let P = [];
+const fit = () => { cv.width = innerWidth; cv.height = innerHeight; }; fit(); addEventListener('resize', fit);
+function burst(n) { for (let i = 0; i < n; i++) P.push({ x: innerWidth / 2, y: innerHeight / 3, vx: (Math.random() - .5) * 14, vy: Math.random() * -12 - 2, c: ['#ffc83d', '#22c55e', '#3b82f6', '#ef4444', '#a855f7'][i % 5], r: Math.random() * 6 + 3, l: 90 }); }
+(function loop() { cx.clearRect(0, 0, cv.width, cv.height); P = P.filter(p => p.l-- > 0); P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; cx.fillStyle = p.c; cx.fillRect(p.x, p.y, p.r, p.r * 1.6); }); requestAnimationFrame(loop); })();
+
+$('start').onclick = start; $('again').onclick = start; $('home').onclick = () => show('s0');
+</script>
+</body>
+</html>
